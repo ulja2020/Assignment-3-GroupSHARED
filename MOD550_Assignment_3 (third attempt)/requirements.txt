@@ -1,0 +1,15 @@
+# MOD550 Assignment 3 -- Python 3.11 or newer.
+#
+# Lower bounds, so this installs on a range of setups. The exact versions the
+# reported numbers were produced with are listed in the README; if you need to
+# reproduce them to the last decimal, pin to those instead.
+numpy>=2.0
+pandas>=2.2
+scipy>=1.13
+scikit-learn>=1.5
+matplotlib>=3.8
+tensorflow-cpu>=2.16          # or `tensorflow` if you want GPU support; not required
+
+# to run the notebooks
+jupyterlab>=4.0
+ipykernel>=6.29

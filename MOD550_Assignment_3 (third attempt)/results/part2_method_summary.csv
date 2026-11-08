@@ -1,0 +1,11 @@
+section,method,what it said on the bearing data
+C2,dense vs conv,"one Dense(128) on a raw window costs 262,272 weights against 1,040 for the conv"
+C3,what a kernel does,"the smoother destroys window kurtosis, the differencing kernels keep it: impulsiveness is the signal"
+C5,parameters by hand,"hand count 5,562 matches Keras exactly; 5,466 of them trainable"
+C6,pooling,"with Flatten, dropping pooling costs 3.9x more parameters (130,298 -> 513,274); with global pooling, nothing"
+C8,label format,one-hot + categorical and integer + sparse give bit-identical loss
+C9,validation_split,unshuffled it holds back ONE class and reports 0.000; shuffled it reports a leaked number
+C10,worst confusions,the 5-line ranking loop finds Ball_021 -> Ball_014 and Inner_014 immediately
+C11,augmentation,"+0.131 mean, inside the 0.141 seed spread; 8/9 pairwise wins, so promising not proven"
+C12,save and reload,reloaded model reproduces predictions exactly
+C13,a new measurement,sampling rate matters most; a 3x sensor gain still classified correctly

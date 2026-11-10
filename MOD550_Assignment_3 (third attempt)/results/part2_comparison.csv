@@ -1,7 +1,0 @@
-model,inputs,macro_F1,sd,lo,hi,runs
-SVM linear,33 engineered features,0.8809065051839617,,,,1
-Random Forest,33 engineered features,0.8778557846647734,,,,1
-1-D CNN (5 seeds),raw 2048-sample window,0.8662539558054896,0.1156285504685133,0.7345459261545848,0.9932183908045976,5
-SVM rbf,33 engineered features,0.8454218661115214,,,,1
-SVM poly (d=3),33 engineered features,0.8044741205225077,,,,1
-Logistic Regression,33 engineered features,0.802977816054596,,,,1

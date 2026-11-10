@@ -1,0 +1,16 @@
+section,method,what it said on the bearing data
+I.3.1,scaling,"spread 234,421:1; unscaled macro-F1 0.515 against 0.767 with StandardScaler"
+I.3.1,fit on train only,fitting the scaler on all data gains +0.119 macro-F1 while changing the median feature by 2%: the model is fragile
+I.3.2,id-like columns,rec_id alone scores 1.000 on a random split: it is the label written twice. Kept out of the 33 features
+I.3.3,stratify,"our load split is stratified by construction, all 10 classes in the test load"
+I.3.4,variogram,3 of 4 recordings independent at lag 1; OR_021 correlates 0.56 with a range of 6 windows
+I.3.5,leak and rare classes,a random window split inflates macro-F1 by +0.148; accuracy alone is not a result
+I.4.1,kernel,on a 2-D slice all three kernels find the same physics; they part company off the training loads
+I.4.2,C,train and test F1 separate as C grows
+I.4.3,gamma,"gamma=100: train 1.000, test collapses, nearly every window a support vector"
+I.4.4,GridSearchCV cv=5,"claims 0.999, delivers 0.879; KFold shuffles near-duplicate windows"
+I.5.1,class_weight,balanced COSTS -0.053 mean recall and 0.06 macro-F1 here: the rare class was never the problem
+I.5.2,confusion matrix,"fault vs healthy: 0 missed faults, 0 false alarms out of 827"
+I.5.3,metrics by hand,hand-computed accuracy/precision/recall/F1 match sklearn exactly
+I.5.4,per-class + macro,macro F1 0.881 below weighted 0.915: the big classes are the easy ones
+I.5.5,scoring=,"three scorings, three different answers about one model"

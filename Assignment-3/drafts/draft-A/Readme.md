@@ -194,3 +194,93 @@ The baseline predicts the most frequent training class [I.3-3]. Inner-race, ball
 | Date | Tool used | Essence of major prompts | What was kept | What was changed |
 |---|---|---|---|---|
 | 2026-11-15 | ChatGPT/Codex with Python and official documentation | Implement the agreed Task I.3 split, leakage controls, primary metric and baseline; keep the report within 200 words. | Fixed load-based partitions, macro-F1, training-majority baseline and shared-bearing/full-dataset-exploration limitations. | Added reproducible partition checks and a split inventory; fitted the reference classifier on training data and scored validation only. |
+
+## Task I.4 - SVM Modeling
+
+### Method and results
+
+The notebook compares StandardScaler–SVC pipelines with linear and RBF kernels. The eight I.2 predictors and I.3 load partitions are unchanged. Class weights are fixed to `balanced` for both kernels and calculated from training labels only. The corresponding weights are 3.3534 for normal and 0.8104 for each fault class. Metadata never enter the model.
+
+`PredefinedSplit` assigns all 778 training observations to fitting and all 400 validation observations to scoring. `GridSearchCV(refit=False)` prevents automatic refitting on the combined development set. Selected models are fitted on training only; assertions verify the scaler's training mean/variance and reproduce the search scores. No test predictions or scores are computed.
+
+C = {0.001, 0.01, 0.1, 1, 10, 100, 1000}; RBF gamma = {0.0001, 0.001, 0.01, 0.1, 1, 10, 100}. All 56 configurations completed. One boundary extension would be allowed if the winning edge strictly improved on its adjacent profile value; neither kernel required it. Macro-F1 is the sole selection score. Numerical ties within 1e-12 prefer lower C, then lower gamma; a kernel tie prefers linear.
+
+Selected linear: C = 1, training macro-F1 0.998958, validation 1.000000, 63 support vectors. Selected RBF: C = 1, gamma = 0.1, training 0.998958, validation 1.000000, 139 support vectors. The majority validation score remains 0.115385. Linear is retained because RBF adds no validation benefit. The single validation load, shared specimens and prior full-dataset exploration limit interpretation; perfect validation is not evidence of unseen-bearing generalisation.
+
+### Generated outputs
+
+- `data/I4_tuning_results.csv`: all 56 configurations, training/validation scores, gaps and selected flags.
+- `data/I4_model_comparison.csv`: selected kernels and majority baseline; support-vector counts apply to SVMs only.
+- `figures_of_data/I4_tuning_results.png` and `I4_model_comparison.png`: complete CSV-backed tables, with scores rounded to four decimals for display.
+- `figures/I4_rbf_validation_heatmap.png` and `I4_regularisation_curves.png`: validation sensitivity and training/validation diagnostics.
+
+The notebook embeds the comparison table and both diagnostic figures, with preceding text explanations. The complete search table is retained separately to avoid repeating the heatmap. Its Task I.4 prose is 287 words, including headings and explanations, below the 300-word limit. Existing I.1–I.3 cells are unchanged. The PDF now includes Tasks I.1–I.5.
+
+### Sources for Task I.4
+
+[I.4-1] scikit-learn. [SVC](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html). C, kernels and balanced class weights. Accessed 16 November 2026.
+
+[I.4-2] scikit-learn. [PredefinedSplit](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.PredefinedSplit.html) and [GridSearchCV](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html). Fixed validation membership, training scores and refit control.
+
+[I.4-3] scikit-learn. [RBF SVM parameters](https://scikit-learn.org/stable/auto_examples/svm/plot_rbf_parameters.html). C/gamma interpretation and logarithmic search.
+
+### AI Log
+
+| Date | Tool used | Essence of major prompts | What was kept | What was changed |
+|---|---|---|---|---|
+| 2026-11-16 | ChatGPT/Codex with Python and official documentation | Implement Task I.4 using the established split, concise documented code, CSV-backed tables and explained figures; keep discussion within 300 words. | Eight predictors, fixed load partitions, macro-F1 and original-source dataset. | Added 56-configuration linear/RBF tuning, training-only scaling and balanced weights, model comparison, diagnostic figures and final discussion; retained linear after a validation tie. |
+
+| 2026-11-16 | ChatGPT/Codex with Python | Clarify the fixed balanced class-weight setting in the I.4 notebook. | Existing models, code and results. | Expanded the explanation of training-frequency weights, their numerical values and equal total class weight; verified the 300-word limit. |
+
+
+## Task I.5 - Model Evaluation and Comparison
+
+### Method and selection chronology
+
+The eight features, fixed load partitions and preprocessing are unchanged. Both SVM configurations are retained from I.4. Balanced multinomial logistic regression provides a linear alternative with a different training objective; L2 regularisation uses `l1_ratio=0`, solver `lbfgs`, tolerance 1e-6 and at most 5000 iterations. Convergence warnings are treated as errors.
+
+Logistic regression C was searched over {0.001, 0.01, 0.1, 1, 10, 100, 1000} using the same PredefinedSplit, training-only scaling and macro-F1 selection. No automatic refit on validation was allowed. C = 1 was selected: validation macro-F1 0.997917, tied with larger C values and preferred by the smaller-C rule. The fixed seven-value search was completed before any test predictions. No settings were changed after test results were obtained.
+
+All three pipelines were fitted on the original 778 training windows, with balanced class weights calculated from training labels only. Scaler means and variances were verified against that partition. Their 400 test observations and row order are identical. Neither validation nor test observations were added to training. This preserves direct comparability with I.4. The selected logistic validation score was reproduced before test evaluation.
+
+### Test results and interpretation
+
+| Model | Accuracy | Macro precision | Macro recall | Macro-F1 | Errors |
+|---|---:|---:|---:|---:|---:|
+| Linear SVM | 0.8900 | 0.932927 | 0.762500 | 0.757156 | 44 |
+| RBF SVM | 0.9875 | 0.985620 | 0.985417 | 0.985441 | 5 |
+| Logistic regression | 0.9950 | 0.995902 | 0.995833 | 0.995842 | 2 |
+
+Macro averages give each class equal weight; class-specific metrics include support (normal 40, each fault class 120), and undefined precision/recall/F1 values are set to zero. Confusion matrix rows are actual classes and columns predicted classes, ordered normal, inner_race, ball, outer_race. Colours and annotations use percentages within each actual class; raw counts are also shown.
+
+Logistic regression has the highest observed test macro-F1. Linear remains the SVM selected through validation; RBF performs better on this test load. The linear model's main error is normal-to-ball (35/40 normal windows); its normal recall is 0.125 despite precision 1.0. All models send some other-class windows to ball. Logistic regression makes one inner-race-to-ball and one outer-race-to-ball error. RBF makes one normal-to-ball, one ball-to-normal and three outer-race-to-ball errors.
+
+The test ranking is descriptive and does not initiate further tuning or replace the validation selection retrospectively. Logistic regression's advantage over RBF is three windows, not established statistical superiority. The 400 windows come from ten recordings; windows from a recording are dependent, so treating them as 400 independent trials would overstate evidence. Shared specimens, a single held-out load and I.2 full-dataset exploration also limit generalisation. Test results are now exposed and must not be reused to guide subsequent model tuning.
+
+### Generated outputs
+
+- `data/I5_logistic_tuning.csv`: seven validation search configurations and selection flag.
+- `data/I5_model_comparison.csv`: test accuracy and macro precision, recall and F1.
+- `data/I5_class_metrics.csv`: all 12 model/class combinations with support.
+- `data/I5_confusion_counts.csv`: all 48 matrix entries, including zeros and row percentages.
+- `data/I5_test_predictions.csv`: recording/window identifiers, actual labels and aligned predictions for each model.
+- `figures_of_data/`: complete PNG tables for all five CSVs, without row splitting.
+- `figures/I5_confusion_matrices.png`: three matrices with the same class order and 0–100% colour scale.
+
+The notebook embeds the overall and per-class tables and confusion figure once, each with a preceding explanation. Its I.5 prose totals 254 words, including headings and explanations, within the 300-word limit. Prior notebook cells are unchanged. The PDF now includes Tasks I.1–I.5.
+
+### Sources for Task I.5
+
+[I.5-1] scikit-learn. [LogisticRegression](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html). Multinomial loss, L2 regularisation, C and balanced weights. Accessed 16 November 2026.
+
+[I.5-2] scikit-learn. [precision_recall_fscore_support](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.precision_recall_fscore_support.html). Class-specific metrics, support, macro averaging and undefined-score handling.
+
+[I.5-3] scikit-learn. [confusion_matrix](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.confusion_matrix.html). Actual/predicted orientation and class ordering.
+
+### AI Log
+
+| Date | Tool used | Essence of major prompts | What was kept | What was changed |
+|---|---|---|---|---|
+| 2026-11-16 | ChatGPT/Codex with Python and official documentation | Implement I.5 using identical features, preprocessing and test observations; compare both SVMs with validation-tuned logistic regression and explain errors within 300 words. | I.3 partitions, I.4 SVM settings, macro-F1 selection and established table/figure presentation. | Added logistic validation tuning, frozen test evaluation, overall and class-specific metrics, confusion matrices and aligned predictions; distinguished validation selection from observed test ranking. |
+
+| 2026-11-16 | ChatGPT/Codex with Python and PDF rendering | Update the report PDF to include I.4 and I.5 using the established layout. | Notebook prose, results, A4 sizes and code-cell references. | Updated cover and linked contents, added model tables and diagnostic figures, and checked page layout; final PDF contains 28 A4 pages. |

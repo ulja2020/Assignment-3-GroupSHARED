@@ -1,7 +1,8 @@
-# Versions used to execute Task I.2
+# Versions used to execute Tasks I.2–I.4
 numpy==2.5.3
 scipy==1.18.1
 pandas==3.0.6
 matplotlib==3.11.2
 scikit-learn==1.9.1
 ipython==9.17.1
+Pillow==12.3.0

@@ -6,3 +6,8 @@ matplotlib==3.11.2
 scikit-learn==1.9.1
 ipython==9.17.1
 Pillow==12.3.0
+
+# Additional versions used to execute Task II.2 (existing Python 3.14.7 environment)
+tensorflow==2.22.0rc0
+keras-nightly==3.16.0.dev2026110403
+h5py==3.15.1

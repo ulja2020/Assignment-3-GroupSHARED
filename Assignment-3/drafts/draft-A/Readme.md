@@ -4,7 +4,9 @@
 
 - `public_dataset/`: all original downloads and accompanying source materials; preserve raw recordings unchanged.
 - `figures/`: PNG outputs produced by our code only.
-- `data/`: CSV outputs produced by our code only.
+- `data/`: derived CSV tables, prepared NPZ tensors and JSON provenance produced by our code only.
+- `figures_of_data/`: readable PNG tables generated from the derived CSV files.
+- `models/`: saved model archives with explicit initial/trained status.
 - Notebook and documentation: directly within mother folder.
 
 ## Task I.1 - Engineering Problem and Dataset
@@ -110,6 +112,8 @@ All 40 recordings meet the structural requirements and are retained. The code se
 
 ### Preparation and outputs
 
+Signal preparation is imported from `signal_preparation.py`, stored alongside both notebooks. Parts I and II use the same function for resampling, filtering and edge trimming. All 1,578 reconstructed windows match Part I's saved hashes, confirming unchanged preparation results.
+
 The notebook resamples normal DE signals to 12 kHz, applies a common 4.5 kHz low-pass filter, trims 0.05 s at each edge, and extracts disjoint 0.25 s windows. Incomplete tails are discarded and counted. Windows are mean-centred; amplitude is retained. Eight predictors describe amplitude, impulsiveness and spectral content. No missing-predictor imputation, statistical outlier removal or oversampling is required by the audit. Possible peak truncation (clipping) remains a measurement limitation rather than being silently repaired.
 
 The resulting feature matrix has 1,578 rows and eight float64 predictors. Missing RPM and normal fault diameter are metadata missingness, not missing model inputs. No selected signals, prepared windows or feature vectors are exact duplicates. Class imbalance is 138 normal windows versus 480 per fault class. Recording medians and full-window distributions are both displayed to avoid presenting windows as independent specimens.
@@ -158,6 +162,7 @@ Open `Part_I_SVM.ipynb` with `draft-A` as the working directory and run cells in
 | 2026-11-15 | ChatGPT/Codex with Python | Suppress only output tables already represented in embedded PNG tables. | Calculations, CSV exports and outputs containing additional information. | Removed the duplicated recording-anomaly subset display and its saved output; retained software versions, channel-duplicate evidence, the feature preview and the partition summary. |
 | 2026-11-15 | ChatGPT/Codex with Python | Replace the three printed dataset checks with a CSV-backed PNG and explain both it and the first-five-observation preview. | Existing dataset values, calculations and feature preview. | Added the summary CSV/PNG and preceding text cells; replaced the printed stream and moved the preview into its own display cell. |
 | 2026-11-15 | ChatGPT/Codex with Python | Use peak truncation (clipping) in narrative and explain the anomaly figure in its preceding text cell. | Original source wording, compact table fields and diagnostic data. | Removed the figure supertitle, clarified both panel types and updated its embedded image. |
+| 2026-11-18 | ChatGPT/Codex with Python | Explain the shared signal-preparation import in the Part I notebook and Readme. | Existing preparation code, data, figures and results. | Added a note before code cell 3 and in the Part I.2 preparation section; documented the shared local module and 1,578 matching window hashes. |
 
 ## Task I.3 - Classification Strategy and Baseline
 
@@ -284,3 +289,249 @@ The notebook embeds the overall and per-class tables and confusion figure once, 
 | 2026-11-16 | ChatGPT/Codex with Python and official documentation | Implement I.5 using identical features, preprocessing and test observations; compare both SVMs with validation-tuned logistic regression and explain errors within 300 words. | I.3 partitions, I.4 SVM settings, macro-F1 selection and established table/figure presentation. | Added logistic validation tuning, frozen test evaluation, overall and class-specific metrics, confusion matrices and aligned predictions; distinguished validation selection from observed test ranking. |
 
 | 2026-11-16 | ChatGPT/Codex with Python and PDF rendering | Update the report PDF to include I.4 and I.5 using the established layout. | Notebook prose, results, A4 sizes and code-cell references. | Updated cover and linked contents, added model tables and diagnostic figures, and checked page layout; final PDF contains 28 A4 pages. |
+
+
+## Task II.1 - Engineering Problem and Dataset
+
+### Dataset reuse and prediction target
+
+`Part_II_CNN.ipynb` starts Part II with **Option B: a compact one-dimensional convolutional neural network (1-D CNN)**. The target remains normal, inner-race fault, ball fault or outer-race fault in measured drive-end bearing vibration. These are laboratory measurements with deliberately introduced faults, not simulated records; the task is classification within that experimental scope, not remaining useful life estimation or demonstrated field diagnosis [II.1-1].
+
+The selected dataset is unchanged, so Part I's origin, dataset citation, acquisition manifest and unresolved licence assessment are carried forward. Public download availability is not treated as a blanket reuse licence. Original recordings are unchanged, and no new dataset is acquired for II.1. The original citation remains: Case Western Reserve University, Bearing Data Center. *Bearing Data Center* [dataset]. https://engineering.case.edu/bearingdatacenter.
+
+### Verified size and proposed neural-network inputs
+
+The II.1 code reads the existing recording, processing, feature and split inventories without modifying them. It verifies 40 distinct recordings, 1,578 unique recording/window pairs, 12 kHz prepared sampling and the count of complete 3,000-sample windows. Normal has 138 windows; each fault class has 480. The two size counts are **40 original recordings** and **1,578 derived model observations**; neither establishes 1,578 independent bearing specimens.
+
+The proposed CNN input for each observation is the prepared acceleration sequence, mean-centred within its existing non-overlapping 0.25-second window. It will reuse Part I's resampling, common low-pass filter and edge trimming. The planned channels-last input layout is `(1578, 3000, 1)`: windows, temporal samples and drive-end channel. At the II.1 checkpoint this was a specification; Task II.2 below constructs and verifies the tensor. The 3,000 samples are temporal input values; the eight engineered SVM descriptors are not fed to the CNN. Load, speed, defect size, recording identifiers and quality flags remain metadata.
+
+### Architecture rationale and evaluation continuity
+
+Conv1D applies shared convolution kernels along the temporal dimension [II.1-2]. Selecting a small 1-D CNN is our methodological inference: short vibration impulses and oscillatory patterns provide a meaningful local sequence structure, and weight sharing avoids a separate learned parameter for every temporal position. The engineering signal already has one temporal axis, so an artificial image representation is unnecessary. The choice is justified by input structure, not by an assumed performance advantage over the Part I models. Layer counts, kernel widths, regularisation, optimisation and training are deferred to later tasks. No RNN/LSTM comparison is required by the selected option.
+
+The split inventory is retained: loads 0-1 HP provide 778 training windows; load 2 provides 400 validation windows; load 3 provides 400 test windows. All windows from each recording stay together. Any learned scaling and subsequent model selection must use training and validation data only. Window mean removal is a per-observation operation rather than a population-fitted transform. Part I has already exposed test results; the reused test load cannot be described as newly blind or used to guide CNN tuning. Shared specimens, dependent windows and a single test load continue to limit generalisation. Macro-F1 remains the planned primary selection metric.
+
+### Generated outputs and report scope
+
+- `Part_II_CNN.ipynb`: the II.1 report, one executed count-verification/summary-generation code cell, and one embedded summary image. At the II.1 checkpoint no tensor construction, neural-network fitting or new test evaluation had run; Task II.2 below implements the inputs and initial model.
+- `data/II1_dataset_summary.csv`: the verified counts and explicitly labelled proposed CNN input specification.
+- `figures_of_data/II1_dataset_summary.png`: the CSV-backed summary, with `Nb code cell 1` on its second heading line. The notebook embeds this exact PNG after its explanatory text, without a duplicate table output.
+
+- `Part_II_CNN.pdf`: fourteen A4 portrait/landscape pages, comprising a date-free cover, linked contents and Tasks II.1-II.4; CSV-backed tables and figures have the agreed grey frames, and code is replaced by its numbered execution-label reference.
+
+The notebook discussion is **92 words including its Part II and II.1 headings**, excluding the table, image alternative text and code. It meets the 100-word limit. Detailed source notes and methodological support are documented here. Part I notebooks, data, PNGs and PDFs are unchanged.
+
+### Sources for Task II.1
+
+[II.1-1] Case Western Reserve University, Bearing Data Center. [Apparatus & Procedures](https://engineering.case.edu/bearingdatacenter/apparatus-and-procedures). Laboratory motor rig, seeded defects, accelerometers, MAT recordings and documented sampling rates. Dataset citation and reuse assessment are retained from Task I.1. Accessed 18 November 2026.
+
+[II.1-2] Keras. [Conv1D layer](https://keras.io/api/layers/convolution_layers/convolution1d/). Temporal convolution, kernel parameters and channels-last `(batch, steps, channels)` input structure. This supports the layer/input description; the application-specific suitability argument is our inference. Referencing the layer documentation does not yet fix a training framework or full architecture. Accessed 18 November 2026.
+
+Local count and preprocessing evidence: `data/I2_recording_inventory.csv`, `data/I2_processing_summary.csv`, `data/I2_window_features.csv` and `data/I3_split_inventory.csv`; Part I notebook code cells 2-3 and 8. The saved source inventories, not the public documentation, establish the counts for this selected subset.
+
+### AI Log
+
+| Date | Tool used | Essence of major prompts | What was kept | What was changed |
+|---|---|---|---|---|
+| 2026-11-18 | ChatGPT/Codex with Python and original documentation | Develop II.1 using the agreed CWRU reuse, compact 1-D CNN rationale and established notebook/table style; keep the report within 100 words. | Original recordings, prepared window definition, four classes, fixed partitions, provenance and exposed-test limitations. | Created a separate Part II notebook with a 92-word discussion, verified count summary, CSV-backed PNG and sources; deferred waveform tensor construction and neural-network training. |
+| 2026-11-18 | ChatGPT/Codex with Python and PDF rendering | Generate the corresponding Part II PDF using the established report style. | The 92-word discussion, selected CNN rationale, verified summary values and notebook contents. | Created a three-page A4 PDF with cover, linked contents, framed CSV-backed table and code-cell reference; checked all table values and rendered pages. |
+
+
+## Task II.2 - Data Preparation and Implementation
+
+### Development sequence and shared preparation
+
+The implementation contains three new notebook code cells: prepare/verify inputs (Nb code cell 2), build/check the CNN (cell 3), and save outputs/render tables (cell 4). Each step is preceded by explanatory prose, and the four embedded tables have their own preceding interpretations. II.1's 92-word report is unchanged; its summary status is explicitly scoped to that earlier checkpoint.
+
+`signal_preparation.py` contains the original Part I signal-preparation constants and function, extracted verbatim rather than rewritten. Part I code cell 3 now imports those names; its other cells, discussion and numerical outputs are unchanged. This makes both notebooks use the same resampling, fourth-order 4.5 kHz Butterworth filter, forward/backward filtering and 0.05-second trimming at each edge. Hash verification of all 40 source files and all 1,578 reconstructed windows establishes that this refactoring preserved the audited observations.
+
+For each cached MAT file, the saved selected DE variable and documented sample rate are read from the Part I inventory. Normal recordings are resampled from 48 to 12 kHz; fault recordings remain at 12 kHz. Complete non-overlapping 3,000-sample windows are reconstructed using their saved recording/window keys. Their float64, little-endian hashes are checked before centring, standardisation or float32 conversion. No raw source files are changed or downloaded again.
+
+### Partitions, targets and leakage controls
+
+The existing split inventory is joined by recording ID and window index, never by coincidental CSV order. Every source key is covered once. Loads 0-1 HP supply training data, load 2 supplies validation data and load 3 supplies the later evaluation set. Assertions verify no shared recordings or original window hashes across partitions and all-class coverage.
+
+| Partition | Recordings | Windows | Input shape | Normal | Inner race | Ball | Outer race |
+|---|---:|---:|---|---:|---:|---:|---:|
+| Training | 20 | 778 | `(778, 3000, 1)` | 58 | 240 | 240 | 240 |
+| Validation | 10 | 400 | `(400, 3000, 1)` | 40 | 120 | 120 | 120 |
+| Test | 10 | 400 | `(400, 3000, 1)` | 40 | 120 | 120 | 120 |
+
+Targets are int64 class indices: normal=0, inner_race=1, ball=2, outer_race=3. No one-hot encoding is needed for sparse categorical cross-entropy [II.2-4]. The 3,000 temporal acceleration values form the one-channel input; the eight engineered SVM descriptors and operating/identity metadata are excluded from predictors. Window dependence and shared specimens remain limitations.
+
+Each window is mean-centred independently, then one channel mean and population standard deviation are calculated using the 2,334,000 acceleration samples in the 778 training windows. The fitted mean is **1.5853023930246317e-19** and standard deviation **0.34132989120121204**. The common transformation `(centred acceleration - training mean) / training std` is applied to all three partitions before float32 conversion. No validation/test samples contribute to these two statistics. The small training mean reflects the preceding window mean removal; individual window standard deviations are not normalised away. The scaled training mean is approximately 1.48e-11 and standard deviation approximately 1. Inputs are finite float32 tensors; target ranges and tensor shapes are checked.
+
+### Working CNN and architecture summary
+
+A Keras Sequential model has the following initial architecture [II.2-1, II.2-2, II.2-3]. Output dimensions omit the batch axis in this compact description; the complete CSV/PNG includes it as `None`.
+
+| Component | Settings | Output | Trainable parameters |
+|---|---|---|---:|
+| Input | 3,000 time steps, one acceleration channel | `3000 x 1` | 0 |
+| Conv1D + ReLU | 16 filters, kernel 15, stride 1, same padding, biases | `3000 x 16` | 256 |
+| MaxPooling1D | Pool/stride 4, valid padding | `750 x 16` | 0 |
+| Conv1D + ReLU | 32 filters, kernel 7, stride 1, same padding, biases | `750 x 32` | 3,616 |
+| GlobalAveragePooling1D | Temporal mean of each feature map | `32` | 0 |
+| Dense + softmax | Four units and biases | `4` | 132 |
+| Total | Two convolutional layers | `4` | **4,004** |
+
+The convolutions learn local patterns and their combinations. Max pooling reduces the intermediate sequence length; global averaging aggregates features without a large flattened head. The specific filter counts and kernel widths are initial design decisions, not tuned optima. The architecture summary is an explicit II.2 output, generated from the actual layer shapes and trainable weights. Independent arithmetic checks include biases: `(15*1+1)*16 + (7*16+1)*32 + (32+1)*4 = 4004`. There are no non-trainable model parameters.
+
+The model is compiled with Adam at a provisional learning rate of 0.001 and sparse categorical cross-entropy on softmax probabilities. Seed 550 is recorded and deterministic TensorFlow operations are requested [II.2-4, II.2-6]. Initialising the optimiser's zero state supports faithful model serialisation without applying updates. An eight-observation training batch produces finite `(8,4)` probabilities in [0,1] with row sums of one and finite loss. Initial loss is a numerical readiness check, not an accuracy or generalisation result. All initial weights are unchanged, and the optimiser iteration count is **zero**. Gradient/update checks and training schedules remain for the later training task.
+
+The input archive is reopened and compared element-for-element. The complete `.keras` model is reloaded, its weights are compared exactly, and its training-batch probabilities reproduce [II.2-5]. No `fit`, optimiser update, validation/test prediction or test performance score is executed in II.2. Part I's previously examined test results do not guide the CNN settings; the reused test set is not described as newly blind. Macro-F1 remains the planned selection metric for later tasks.
+
+### Outputs and reproduction
+
+Run `Part_II_CNN.ipynb` top to bottom with `draft-A` as the working directory. Both notebooks must remain beside `signal_preparation.py`. The existing runtime is Python 3.14.7, TensorFlow 2.22.0-rc0 and Keras 3.16.0.dev2026110403, supplied by the installed `keras-nightly` distribution. These existing prerelease versions and h5py 3.15.1 are recorded in the metadata and requirements; no runtime installation or upgrade was performed. Reproduction across different framework versions/hardware is not assumed bitwise identical merely because the seed matches.
+
+- `data/II2_model_inputs.npz`: one compressed archive containing `X_`, `y_` and `row_index_` arrays for training, validation and test. Waveforms are float32 and targets int64.
+- `data/II2_input_inventory.csv`: global row index, recording/window keys, target, load, partition and original window hash. The archive row indices link back to this inventory.
+- `data/II2_preparation_metadata.json`: one record of the scaling statistics, class mapping, split counts, source hashes, module hash, seed, versions, readiness checks, initial-state status and saved-artifact fingerprints.
+- `models/II2_initial_model.keras`: one complete, compiled model archive with **initial, untrained** weights and optimiser state; training remains deferred.
+- `data/II2_partition_summary.csv`, `II2_target_mapping.csv`, `II2_preprocessing_checks.csv`, `II2_architecture_summary.csv`: complete supporting tables. Their corresponding PNGs in `figures_of_data/` are embedded exactly once in the notebook, after their explanations. Stored CSV values are not rounded.
+
+The architecture table includes every layer's settings, output shape and trainable count; the total row is a summary and must not be added again when summing per-layer counts. The preparation table contains the fit statistics and check results; the label table makes class encoding explicit. No redundant notebook table displays or model-summary printout repeat these images. The report PDF now covers II.1-II.4 in fourteen A4 pages, with the architecture summary, supporting tables, learning curves and test results; code blocks are replaced by execution-labelled references. Both report covers follow the agreed Part I style without dates.
+
+### Sources for Task II.2
+
+[II.2-1] Keras. [The Sequential model](https://keras.io/guides/sequential_model/). Linear stacks of layers and explicit input shapes. Accessed 18 November 2026.
+
+[II.2-2] Keras. [Conv1D layer](https://keras.io/api/layers/convolution_layers/convolution1d/). Filters, kernels, stride, padding, activations and temporal input layout. Accessed 18 November 2026.
+
+[II.2-3] Keras. [MaxPooling1D](https://keras.io/api/layers/pooling_layers/max_pooling1d/) and [GlobalAveragePooling1D](https://keras.io/api/layers/pooling_layers/global_average_pooling1d/). Temporal downsampling and feature aggregation. Accessed 18 November 2026.
+
+[II.2-4] Keras. [Probabilistic losses](https://keras.io/api/losses/probabilistic_losses/), SparseCategoricalCrossentropy. Integer targets and probability-based cross-entropy. Accessed 18 November 2026.
+
+[II.2-5] Keras. [Whole model saving & loading](https://keras.io/api/models/model_saving_apis/model_saving_and_loading/). A single `.keras` archive stores architecture, weights and optimiser state. Accessed 18 November 2026.
+
+[II.2-6] Keras. [set_random_seed](https://keras.io/api/utils/python_utils/#set_random_seed-function). Random-seed control and reproducibility limits. Accessed 18 November 2026.
+
+Signal preparation and provenance follow Part I's original sources and audit, not a newly selected dataset. The application-specific rationale for a compact CNN is our inference from the temporal vibration structure, rather than a performance claim established by these API references.
+
+### AI Log
+
+| Date | Tool used | Essence of major prompts | What was kept | What was changed |
+|---|---|---|---|---|
+| 2026-11-18 | ChatGPT/Codex with Python, TensorFlow/Keras and original documentation | Implement the simplified II.2 plan, explain the development steps clearly, provide an explicit architecture summary and add useful non-duplicated tables. | Same recordings, 1,578 windows, fixed load partitions, four classes, two-convolution architecture and leakage controls. | Shared the original signal-preparation function; verified 40 file and 1,578 window hashes; built/scaled tensors and the 4,004-parameter initial CNN; added four CSV-backed tables, one input archive, metadata JSON and a reload-verified model. No fitting or test scoring ran. |
+
+| 2026-11-18 | ChatGPT/Codex with Python and PDF rendering | Update both PDFs with the shared-module explanations and include completed II.2. | Existing numerical results, compact CSV-backed tables, grey frames and execution-labelled code references. | Updated Part I in 28 A4 pages and Part II through II.2 in seven A4 pages; matched date-free covers and verified contents links, all II.2 prose and all 154 Part II table cells. |
+
+
+## Task II.3 - Training and Evaluation
+
+### Protocol fixed before training
+
+The simplified plan uses one pre-specified seeded run, one custom callback, three principal result tables and two figures. The II.2 prepared tensors, training-only scaling, class mapping and two-convolution architecture are unchanged. Training starts from `models/II2_initial_model.keras`, whose saved fingerprint and zero optimiser iteration count are verified. Training and validation arrays are loaded first; test arrays are accessed only after checkpoint selection is complete.
+
+| Setting | Fixed value |
+|---|---|
+| Optimiser | Adam, learning rate 0.001 |
+| Loss | Sparse categorical cross-entropy on four softmax probabilities |
+| Batch size | 32 |
+| Maximum epochs | 100 |
+| Random seed | 550 |
+| Class weights | normal: 3.353448275862069; each fault class: 0.8104166666666667 |
+| Selection | Highest validation macro-F1; strict improvement; exact ties retain earlier epoch |
+| Stopping | 15 consecutive epochs without strictly higher validation macro-F1, or epoch 100 |
+| Splits | Training 778 windows; validation 400; test 400 |
+
+Weights use `778 / (4 * training_class_count)`, with 58 normal and 240 windows for each fault class. They balance total class contributions to the training objective without changing or resampling the held-out distributions. Adam and sparse categorical cross-entropy retain the II.2 implementation [II.3-1, II.3-2]. Training windows are shuffled by a seeded `tf.data.Dataset` each epoch; the notebook explicitly sets `fit(shuffle=False)` because the dataset supplies the shuffle. The original run used the default fit argument, which Keras ignored for this dataset; the explicit argument removes that warning without changing the effective training procedure or results. Deterministic TensorFlow operations are requested and the existing framework versions remain those recorded for II.2.
+
+### One callback, comparable learning curves and stopping
+
+The custom callback runs after each epoch using the completed epoch's weights in inference mode. It obtains training and validation probabilities, computes unweighted cross-entropy and macro-F1, records the epoch and saves the complete model only on a strictly higher validation macro-F1 [II.3-3]. All four labels are included, and undefined class scores are zero. A non-finite training/validation value raises an error.
+
+The weighted batch optimisation loss from Keras is stored separately as `weighted_optimization_loss`. It is not compared directly with unweighted validation loss in the plot. Instead, both plotted losses are unweighted and recomputed after the epoch, using the same weights. The second panel plots training/validation macro-F1. The selected epoch is marked in both panels. This separates probability-sensitive cross-entropy from decision-based F1: probabilities and loss can improve without changing the class argmax. No optimiser search, learning-rate schedule, architecture change or repeated-seed selection is performed.
+
+Training completed **46 epochs**, stopping after 15 consecutive epochs failed to exceed the epoch-31 validation macro-F1. Epoch **31** was selected with training macro-F1 **0.9916643512**, validation macro-F1 **0.9686842151**, training loss **0.0818050727** and validation loss **0.1062805206**. By epoch 46, training macro-F1 was 0.9968748779 and validation macro-F1 0.9580419580. The last epoch's slightly lower validation loss (0.1060379595) did not change the macro-F1 selection rule. The chosen checkpoint contains 775 Adam updates: 31 epochs times 25 training batches. The final in-memory epoch is not used for test evaluation; the selected checkpoint is reloaded and its validation macro-F1 reproduced first.
+
+### Classification evaluation and interpretation
+
+MAE and RMSE are not reported: this is categorical classification rather than regression/forecasting of a numerical quantity. Integer targets 0-3 encode class identity and have no meaningful numerical distance. The notebook retains the explicit justification in the evaluation explanation. Accuracy, macro precision, macro recall, macro-F1, per-class scores/support and a confusion matrix satisfy the classification requirements [II.3-4, II.3-5].
+
+| Metric | Selected CNN, test load 3 HP |
+|---|---:|
+| Accuracy | 0.8300000000 |
+| Macro precision | 0.8489602559 |
+| Macro recall | 0.8583333333 |
+| Macro-F1 | 0.8518515860 |
+| Test windows / errors | 400 / 68 |
+
+| Actual class | Precision | Recall | F1 | Support |
+|---|---:|---:|---:|---:|
+| normal | 0.9302325581 | 1.0000000000 | 0.9638554217 | 40 |
+| inner_race | 0.7619047619 | 0.6666666667 | 0.7111111111 | 120 |
+| ball | 1.0000000000 | 0.9750000000 | 0.9873417722 | 120 |
+| outer_race | 0.7037037037 | 0.7916666667 | 0.7450980392 | 120 |
+
+One logical inference pass over the 400 test windows produces the stored probabilities and labels. All metrics and confusion entries derive from that same prediction inventory. Matrix rows are actual classes and columns predictions, ordered normal, inner_race, ball, outer_race. The 0-100% colour scale uses percentages within each actual class, and annotations give both counts and percentages.
+
+The 68 errors consist of 40 inner-race-to-outer-race, 25 outer-race-to-inner-race and three ball-to-normal predictions. All errors occur in the three 0.014-inch fault recordings under 3 HP: recording 172 contributes all 40 of its windows, recording 200 contributes 25 of 40, and recording 188 contributes three of 40. This identifies a condition-specific cross-load weakness without establishing its cause. In particular, the 68 errors should not be treated as 68 independent bearing failures. Normal recall is 1.0, although the three ball-to-normal predictions reduce normal precision.
+
+Training and validation performance are higher than test performance. Continued training after the selected epoch reduced training loss without exceeding the validation macro-F1; a fitting/validation gap can reflect both fitting behaviour and operating-condition shift. Shared specimens, dependent windows within ten test recordings, one test load and the already examined Part I test results limit generalisation. One seeded run does not establish robustness across initialisations. No CNN setting or selected epoch is revised after seeing the test results.
+
+### Saved outputs and notebook presentation
+
+- `models/II3_selected_model.keras`: the single selected trained checkpoint, including its optimiser state; it does not replace the initial II.2 model.
+- `data/II3_epoch_history.csv`: all 46 epochs, weighted optimisation loss, unweighted epoch-end training/validation losses, macro-F1 values and strict-best flags.
+- `data/II3_run_metadata.json`: the protocol written before training, initial/input hashes, selected epoch, actual stopping reason, selected-model fingerprint, timing, versions and frozen test results. The final `test_inference_passes` value is 1.
+- `data/II3_training_summary.csv`, `II3_test_metrics.csv`, `II3_class_metrics.csv`: the three principal tables, with full stored precision and four-decimal metric displays in their PNG counterparts.
+- `data/II3_confusion_counts.csv`: all 16 matrix entries, including zero counts and row percentages.
+- `data/II3_test_predictions.csv`: all 400 aligned test observations, original recording/window keys, actual/predicted classes and all four probabilities.
+- `figures/II3_learning_curves.png` and `II3_confusion_matrix.png`: the two required figures, with consistent two-line headings, spacing and notebook code cell 7 references.
+
+Three new main notebook code cells train/select (Nb code cell 5), evaluate (cell 6), and save/render (cell 7). Explanations cover the steps, reasoning, class weights, loss/metric distinction, stopping, classification metrics, errors and limitations. The three table PNGs and two figures are each embedded once after a dedicated explanation. The prediction inventory remains a supporting CSV. II.1's 92-word discussion and all II.2/Part I numerical artifacts are unchanged. The updated PDF covers Tasks II.1-II.4 in fourteen A4 pages, including the training protocol, MAE/RMSE justification, learning curves, test metrics, confusion matrix and interpretation of the concentrated errors.
+
+### Sources for Task II.3
+
+[II.3-1] Keras. [Adam](https://keras.io/api/optimizers/adam/). Adaptive moment estimates and optimiser configuration. Accessed 18 November 2026.
+
+[II.3-2] Keras. [Probabilistic losses](https://keras.io/api/losses/probabilistic_losses/), SparseCategoricalCrossentropy, and [model training APIs](https://keras.io/api/models/model_training_apis/). Integer classification targets, weighting and dataset-based training. Accessed 18 November 2026.
+
+[II.3-3] Keras. [Writing your own callbacks](https://keras.io/guides/writing_your_own_callbacks/) and [EarlyStopping](https://keras.io/api/callbacks/early_stopping/). Epoch-end hooks, checkpointing and stopping concepts. The notebook implements the strict macro-F1 rule in one custom callback, rather than combining several callbacks. Accessed 18 November 2026.
+
+[II.3-4] scikit-learn. [precision_recall_fscore_support](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.precision_recall_fscore_support.html) and [f1_score](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.f1_score.html). Class scores, support, macro averages and undefined-score handling. Accessed 18 November 2026.
+
+[II.3-5] scikit-learn. [confusion_matrix](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.confusion_matrix.html). Actual/predicted orientation and fixed label ordering. Accessed 18 November 2026.
+
+### AI Log
+
+| Date | Tool used | Essence of major prompts | What was kept | What was changed |
+|---|---|---|---|---|
+| 2026-11-18 | ChatGPT/Codex with Python, TensorFlow/Keras and original documentation | After explicit Proceed, implement the simplified II.3 plan with clear explanations of steps, reasoning, theory and stopping; retain the MAE/RMSE justification. | II.2 inputs, training-only scaling, fixed partitions, four classes, 4,004-parameter architecture and one seeded protocol. | Trained 46 epochs, selected epoch 31 by validation macro-F1, froze and scored the test set once; added learning curves, required classification results, three CSV-backed tables, trained checkpoint, history/metadata and aligned predictions. No test-guided tuning followed. |
+| 2026-11-18 | ChatGPT/Codex with Python and PDF rendering | Update the Part II PDF after completing II.3. | Existing II.1-II.2 report pages, date-free cover style, compact tables, grey frames and execution-labelled code references. | Added II.3 in four pages; checked all 54 new table values, seven code references, ten frames and three contents destinations, and visually reviewed the new pages. |
+
+## Task II.4 - Model Behavior
+
+### Option B - Prediction Errors
+
+II.4 analyses the test predictions saved in II.3. “Frozen predictions” means retaining those predictions and the epoch-31 selected model, with no retraining, additional inference or test-guided adjustment. Notebook code cell 8 is a standalone analysis of saved CSVs; it does not load TensorFlow or the model. Run it from `draft-A` after the II.3 artifacts exist. Earlier cells need not be rerun to reproduce II.4.
+
+The code checks that the 400 prediction row indices uniquely and completely match the II.2 test inventory, verifies recording/window/class identities and test load, and joins the audited recording metadata. It aggregates all ten test recordings, including successes, into error counts, percentages and wrong-label destinations. Source fingerprints verify that the inputs, predictions, metrics and checkpoint remain unchanged.
+
+Recording 172 (inner race, 0.014 inches) has 40/40 errors, all predicted outer race; recording 200 (outer race, 0.014 inches) has 25/40 errors, all predicted inner race; recording 188 (ball, 0.014 inches) has 3/40 errors, all predicted normal. The other seven recordings have no errors. Inner/outer confusions account for 65/68 errors (95.6%). The table and plot include every recording, rather than selecting only failures.
+
+The notebook distinguishes measured findings from hypotheses about operating-condition changes and the learned representation. All test records have the same nominal 3 HP load, and outer-race position is fixed, so these variables alone do not explain the concentration. No causal or signal-similarity experiment is claimed. Dependent windows, one recording per condition/diameter at the test load, shared specimens and one seeded model limit generalisation. The architecture and test results remain unchanged; Option A's complexity comparison and repeated seeds are not required for the chosen Option B.
+
+### Generated outputs
+
+- `data/II4_recording_errors.csv`: all ten test recordings, condition, fault diameter, load, window count, errors, error percentage and wrong-label counts.
+- `data/II4_analysis_metadata.json`: source SHA-256 fingerprints, alignment checks and analysis totals.
+- `figures_of_data/II4_recording_errors.png`: CSV-backed recording table; heading identifies Task II.4 and Nb code cell 8.
+- `figures/II4_recording_errors.png`: recording-level error-rate chart, with counts and the established two-line plot heading.
+
+Each image is embedded once after its explanation. Code cell 8 produces no duplicate table or plot output. The PDF now covers II.1-II.4 in fourteen A4 pages, including the recording table, error-rate figure and full interpretation. The linked contents and date-free cover reflect II.4.
+
+### References
+
+[II.4-1] Case Western Reserve University Bearing Data Center. [Apparatus & Procedures](https://engineering.case.edu/bearingdatacenter/apparatus-and-procedures). Test apparatus, accelerometer measurements and influence of outer-race position relative to the load zone. Accessed 18 November 2026.
+
+[II.4-2] Case Western Reserve University Bearing Data Center. [12k Drive End Bearing Fault Data](https://engineering.case.edu/bearingdatacenter/12k-drive-end-bearing-fault-data). Load/speed conditions and outer-race positions; the selected files use the 6 o'clock position. Accessed 18 November 2026.
+
+### AI Log
+
+| Date | Tool used | Essence of major prompts | What was kept | What was changed |
+|---|---|---|---|---|
+| 2026-11-18 | ChatGPT/Codex with Python and CWRU documentation | After explicit execution instruction, implement Option B, explain frozen predictions briefly, and provide an evidence-based error analysis. | Saved II.3 predictions, selected model, partitions, earlier notebook cells and numerical results. | Added code cell 8, checked recording joins, all-ten-recording table and error-rate figure, source hash audit, clear explanations, engineering hypotheses and limits. No retraining, inference or model tuning. |
+| 2026-11-18 | ChatGPT/Codex with Python and PDF rendering | Update the Part II PDF to include II.4. | Existing II.1-II.3 body pages, formatting, grey frames and code references. | Added three II.4 pages; verified all II.4 prose and 80 table values, eight code references, twelve frames and four contents destinations; visually reviewed the new pages. |

@@ -16,6 +16,8 @@ Follow the sequence below to run both notebooks, using the folder containing bot
 
 The notebooks contain embedded figures from a previous execution. Running the code creates CSV files, figures and model results, but does not automatically update the embedded figures displayed in the notebooks. After execution, save and close each notebook, run its corresponding image-refresh utility, and reopen it. This ensures that the displayed figures reflect your latest results, whether you are running the notebooks for the first time or repeating the analysis.
 
+`signal_preparation.py` is used automatically by both notebooks when called. Keep it beside the notebooks; do not run it separately.
+
 ```text
 1. Select the intended Python environment and notebook kernel.
    If required, install dependencies: python -m pip install -r requirements.txt
@@ -58,7 +60,7 @@ from pathlib import Path
 print(Path.cwd())
 ```
 
-"draft_A" is only an example folder name. The current project folder is `C:\Users\claud\Assignment-3-GroupSHARED\Assignment-3\drafts\draft-A`; use that path while the project remains there. Setting the directory applies to the current kernel session. After restarting the kernel, check the directory again and repeat the command if needed. The notebook checks report these instructions when the expected notebook file is absent from the working directory; they do not change the directory automatically.
+"draft_A" is only an example folder name. Setting the directory applies to the current kernel session. After restarting the kernel, check the directory again and repeat the command if needed. The notebook checks report these instructions when the expected notebook file is absent from the working directory; they do not change the directory automatically.
 
 #### Moving the notebooks to another folder
 

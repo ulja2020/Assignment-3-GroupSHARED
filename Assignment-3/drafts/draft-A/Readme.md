@@ -39,6 +39,42 @@ The recorded execution environment is Python 3.14.7, TensorFlow 2.22.0-rc0, Kera
 
 Preserve `public_dataset`, including cached source pages, original MAT recordings and the acquisition manifest. Part I reuses cached files after checksum verification. If the cache is missing, acquisition requires access to the original CWRU URLs. Raw downloads total approximately 140 MB and are excluded from version control.
 
+#### Setting the notebook kernel’s working directory
+
+Set the notebook kernel’s working directory to the folder containing both notebooks and the supporting project files (for instance, working directory "draft_A").
+
+To set it, run the following in a notebook cell before running the project code, replacing the example path with your actual folder:
+
+```python
+import os
+os.chdir(r"C:\path\to\draft_A")
+```
+
+Confirm the location with:
+
+```python
+from pathlib import Path
+print(Path.cwd())
+```
+
+"draft_A" is only an example folder name. The current project folder is `C:\Users\claud\Assignment-3-GroupSHARED\Assignment-3\drafts\draft-A`; use that path while the project remains there. Setting the directory applies to the current kernel session. After restarting the kernel, check the directory again and repeat the command if needed. The notebook checks report these instructions when the expected notebook file is absent from the working directory; they do not change the directory automatically.
+
+#### Moving the notebooks to another folder
+
+For a straightforward move of the two notebook files to a new folder, keep these together:
+
+- `signal_preparation.py`.
+- Both refresh utilities (two Python files): `refresh_part_i_images.py` and `refresh_part_ii_images.py`.
+- `requirements.txt`, so the required package versions remain documented.
+
+The required Python packages must also be installed in the environment used by the notebook kernel; they are not files to copy into the project folder. If necessary, install them using `python -m pip install -r requirements.txt`.
+
+Subfolders and their contents are recreated by running Part I fully, followed by Part II. Internet access to the original CWRU source is required to download original data if `public_dataset` is not moved with the notebooks. Move existing subfolders too if you want to retain their recordings, results, models and images instead of rebuilding them.
+
+The refresh utilities locate their notebooks relative to the scripts’ own location, so they remain portable when moved together. Notebook filenames must remain unchanged.
+
+The destination folder does not need to be named `draft-A`. Set the notebook kernel’s working directory to that destination folder: both notebooks resolve project paths using `Path.cwd()`. See the working-directory instructions above.
+
 #### When a full run is required
 
 Running Part I first supplies the required folders and inventories. If all CSVs are deleted, Part I must run before Part II because Part II reuses Part I’s data inventories. Part I creates `data`, `figures` and `figures_of_data` automatically, including when those directories were removed. It recreates 17 CSVs, 17 table PNGs and eight plot PNGs, and repeats its model selection and evaluation. The ten I.2/I.3 table images are rendered immediately after their CSVs are written; I.4/I.5 retain their existing rendering steps.
@@ -365,7 +401,7 @@ The split inventory is retained: loads 0-1 HP provide 778 training windows; load
 - `data/II1_dataset_summary.csv`: the verified counts and explicitly labelled proposed CNN input specification.
 - `figures_of_data/II1_dataset_summary.png`: the CSV-backed summary, with `Nb code cell 1` on its second heading line. The notebook embeds this exact PNG after its explanatory text, without a duplicate table output.
 
-- `Part_II_CNN.pdf`: fourteen A4 portrait/landscape pages, comprising a date-free cover, linked contents and Tasks II.1-II.4; CSV-backed tables and figures have the agreed grey frames, and code is replaced by its numbered execution-label reference.
+- `Part_II_CNN.pdf`: sixteen A4 portrait/landscape pages, comprising a date-free cover, linked contents and Tasks II.1-II.4; CSV-backed tables and figures have the agreed grey frames, and code is replaced by its numbered execution-label reference.
 
 The notebook discussion is **92 words including its Part II and II.1 headings**, excluding the table, image alternative text and code. It meets the 100-word limit. Detailed source notes and methodological support are documented here. Part I notebooks, data, PNGs and PDFs are unchanged.
 
@@ -439,7 +475,7 @@ See [Execution Instructions](#execution-instructions) for the runtime, execution
 - `models/II2_initial_model.keras`: one complete, compiled model archive with **initial, untrained** weights and optimiser state; training remains deferred.
 - `data/II2_partition_summary.csv`, `II2_target_mapping.csv`, `II2_preprocessing_checks.csv`, `II2_architecture_summary.csv`: complete supporting tables. Their corresponding PNGs in `figures_of_data/` are embedded exactly once in the notebook, after their explanations. Stored CSV values are not rounded.
 
-The architecture table includes every layer's settings, output shape and trainable count; the total row is a summary and must not be added again when summing per-layer counts. The preparation table contains the fit statistics and check results; the label table makes class encoding explicit. No redundant notebook table displays or model-summary printout repeat these images. The report PDF now covers II.1-II.4 in fourteen A4 pages, with the architecture summary, supporting tables, learning curves and test results; code blocks are replaced by execution-labelled references. Both report covers follow the agreed Part I style without dates.
+The architecture table includes every layer's settings, output shape and trainable count; the total row is a summary and must not be added again when summing per-layer counts. The preparation table contains the fit statistics and check results; the label table makes class encoding explicit. No redundant notebook table displays or model-summary printout repeat these images. The report PDF now covers II.1-II.4 in sixteen A4 pages, with the architecture summary, supporting tables, learning curves and test results; code blocks are replaced by execution-labelled references. Both report covers follow the agreed Part I style without dates.
 
 ### Sources for Task II.2
 
@@ -529,7 +565,7 @@ Training and validation performance are higher than test performance. Continued 
 - `data/II3_test_predictions.csv`: all 400 aligned test observations, original recording/window keys, actual/predicted classes and all four probabilities.
 - `figures/II3_learning_curves.png` and `II3_confusion_matrix.png`: the two required figures, with consistent two-line headings, spacing and notebook code cell 7 references.
 
-Three new main notebook code cells train/select (Nb code cell 5), evaluate (cell 6), and save/render (cell 7). Explanations cover the steps, reasoning, class weights, loss/metric distinction, stopping, classification metrics, errors and limitations. The three table PNGs and two figures are each embedded once after a dedicated explanation. The prediction inventory remains a supporting CSV. II.1's 92-word discussion and all II.2/Part I numerical artifacts are unchanged. The updated PDF covers Tasks II.1-II.4 in fourteen A4 pages, including the training protocol, MAE/RMSE justification, learning curves, test metrics, confusion matrix and interpretation of the concentrated errors.
+Three new main notebook code cells train/select (Nb code cell 5), evaluate (cell 6), and save/render (cell 7). Explanations cover the steps, reasoning, class weights, loss/metric distinction, stopping, classification metrics, errors and limitations. The three table PNGs and two figures are each embedded once after a dedicated explanation. The prediction inventory remains a supporting CSV. II.1's 92-word discussion and all II.2/Part I numerical artifacts are unchanged. The updated PDF covers Tasks II.1-II.4 in sixteen A4 pages, including the training protocol, MAE/RMSE justification, learning curves, test metrics, confusion matrix and interpretation of the concentrated errors.
 
 ### Sources for Task II.3
 
@@ -569,7 +605,7 @@ The notebook distinguishes measured findings from hypotheses about operating-con
 - `figures_of_data/II4_recording_errors.png`: CSV-backed recording table; heading identifies Task II.4 and Nb code cell 8.
 - `figures/II4_recording_errors.png`: recording-level error-rate chart, with counts and the established two-line plot heading.
 
-Each image is embedded once after its explanation. Code cell 8 produces no duplicate table or plot output. The PDF now covers II.1-II.4 in fourteen A4 pages, including the recording table, error-rate figure and full interpretation. The linked contents and date-free cover reflect II.4.
+Each image is embedded once after its explanation. Code cell 8 produces no duplicate table or plot output. The PDF now covers II.1-II.4 in sixteen A4 pages, including the recording table, error-rate figure and full interpretation. The linked contents and date-free cover reflect II.4.
 
 ### References
 
@@ -607,3 +643,5 @@ Documentation update (19 November 2026): consolidated setup, Part I/Part II exec
 | 2026-11-19 | ChatGPT/Codex with Python | Implement the agreed full-run workflow, Part II attachment refresh and consolidated execution sequence with considerations below and no bold text. | CNN architecture, training/evaluation rules and existing numerical artifacts. | Added Part II image-source metadata and refresh command reusing the Part I helper; reorganised Execution Instructions and tested a full isolated Part II rebuild. |
 
 Part II repair validation: ran all eight code cells in an isolated copy containing original recordings and Part I CSVs, with no Part II results or images initially present. Recreated all 13 Part II CSVs, nine table PNGs and three plot PNGs, plus the input archive, metadata and initial/selected model files. Verified all 12 refreshed attachments exactly match their external PNGs; refresh preserved cell source, saved outputs, data and model hashes. A missing-image check failed before writing and left the notebook unchanged. The project’s existing CNN training (and evaluation) results were preserved; the verification run remained isolated.
+
+PDF update (19 November 2026): both reports now include the current Execution Instructions as a linked appendix. Part I contains 30 A4 pages; Part II contains 16 A4 pages. Existing report body pages, compact tables, figures and grey frames were preserved. Complete appendix wording, A4 page sizes, contents destinations and page numbering were checked.

@@ -12,7 +12,9 @@
 
 ### Execution sequence
 
-Follow this sequence for a complete rebuild, using `draft-A` as the working directory:
+Follow the sequence below to run both notebooks, using the folder containing both notebooks and the supporting project files.
+
+The notebooks contain embedded figures from a previous execution. Running the code creates CSV files, figures and model results, but does not automatically update the embedded figures displayed in the notebooks. After execution, save and close each notebook, run its corresponding image-refresh utility, and reopen it. This ensures that the displayed figures reflect your latest results, whether you are running the notebooks for the first time or repeating the analysis.
 
 ```text
 1. Select the intended Python environment and notebook kernel.

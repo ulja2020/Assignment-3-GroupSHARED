@@ -6,8 +6,7 @@
     "data\\II3_class_metrics.csv": "c84d040984897fc2d62a374ebf77856d33f5c548b05de6f8f9aa536a2f5ed4d5",
     "data\\II2_input_inventory.csv": "9bfeae0b198faf92396c38990bf921b3fd68123408de7830523ad858bab10d8b",
     "data\\I2_recording_inventory.csv": "7418235d5631b3bc2810ece7ff59dcea550eb3209c088878e890d95a3cd16512",
-    "data\\II3_run_metadata.json": "24e4379271bb250650e811f3fe13e9c308bd000a0714425e0fc8c987f463fbfe",
-    "models\\II3_selected_model.keras": "83ac437227cb3b67814082996aa93ce20123998d22810450f55990cb0441e167"
+    "data\\II3_run_metadata.json": "3064119bad1e92007fd00906589ce0ed9bb04df51a12fc51180f2967746ab6d4"
   },
   "test_windows": 400,
   "test_recordings": 10,

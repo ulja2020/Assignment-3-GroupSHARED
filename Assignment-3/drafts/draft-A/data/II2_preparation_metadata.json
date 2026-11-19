@@ -154,6 +154,7 @@
   ],
   "trainable_parameters": 4004,
   "optimizer_iterations": 0,
+  "model_storage": "In memory only; no model archives saved",
   "training_performed": false,
   "test_predictions_or_scores_computed": false,
   "test_exposure": "The load-3 test results were previously inspected in Part I; they do not guide this implementation.",
@@ -163,7 +164,7 @@
     "initial_batch_loss": 1.4918630123138428,
     "finite_probabilities_and_loss": true,
     "weights_unchanged": true,
-    "reload_verified": true
+    "input_archive_reload_verified": true
   },
   "versions": {
     "python": "3.14.7",
@@ -177,7 +178,6 @@
     "h5py": "3.15.1"
   },
   "saved_artifacts": {
-    "data\\II2_model_inputs.npz": "856c2380deb6adc594fbb656149a88e4a779cb8d29655226e014e88a1115d3e1",
-    "models\\II2_initial_model.keras": "f165ab9c9ea8f76f2346dd6fcc49a998c0913be938b43f68562cb6644108c91d"
+    "data\\II2_model_inputs.npz": "856c2380deb6adc594fbb656149a88e4a779cb8d29655226e014e88a1115d3e1"
   }
 }

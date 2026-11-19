@@ -5,7 +5,7 @@ Optimisation loss,Sparse categorical cross-entropy with balanced training class 
 Training class weights,Normal: 3.353448; each fault class: 0.810417
 Batch size / random seed,32 / 550
 Maximum epochs,100
-Selection and tie rule,Highest validation macro-F1; retain earliest epoch on an exact tie
+Selection and tie rule,Highest validation macro-F1; earliest exact tie; restore copied weights in memory
 Stopping rule,"15 consecutive epochs without improvement, or epoch 100"
 Completed epochs,46
 Selected epoch,31

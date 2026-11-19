@@ -6,7 +6,6 @@
 - `figures/`: PNG outputs produced by our code only.
 - `data/`: derived CSV tables, prepared NPZ tensors and JSON provenance produced by our code only.
 - `figures_of_data/`: readable PNG tables generated from the derived CSV files.
-- `models/`: saved model archives with explicit initial/trained status.
 - Notebook and documentation: directly within mother folder.
 
 ## Execution Instructions
@@ -63,13 +62,14 @@ print(Path.cwd())
 
 For a straightforward move of the two notebook files to a new folder, keep these together:
 
+- The two notebook files.
 - `signal_preparation.py`.
 - Both refresh utilities (two Python files): `refresh_part_i_images.py` and `refresh_part_ii_images.py`.
 - `requirements.txt`, so the required package versions remain documented.
 
 The required Python packages must also be installed in the environment used by the notebook kernel; they are not files to copy into the project folder. If necessary, install them using `python -m pip install -r requirements.txt`.
 
-Subfolders and their contents are recreated by running Part I fully, followed by Part II. Internet access to the original CWRU source is required to download original data if `public_dataset` is not moved with the notebooks. Move existing subfolders too if you want to retain their recordings, results, models and images instead of rebuilding them.
+Subfolders and their contents are recreated by running Part I fully, followed by Part II. Internet access to the original CWRU source is required to download original data if `public_dataset` is not moved with the notebooks. Move existing subfolders too if you want to retain their recordings, results and images instead of rebuilding them.
 
 The refresh utilities locate their notebooks relative to the scripts’ own location, so they remain portable when moved together. Notebook filenames must remain unchanged.
 
@@ -79,9 +79,9 @@ The destination folder does not need to be named `draft-A`. Set the notebook ker
 
 Running Part I first supplies the required folders and inventories. If all CSVs are deleted, Part I must run before Part II because Part II reuses Part I’s data inventories. Part I creates `data`, `figures` and `figures_of_data` automatically, including when those directories were removed. It recreates 17 CSVs, 17 table PNGs and eight plot PNGs, and repeats its model selection and evaluation. The ten I.2/I.3 table images are rendered immediately after their CSVs are written; I.4/I.5 retain their existing rendering steps.
 
-If Part II’s CSVs are deleted, run Part II fully to recreate its CSVs, figures and CNN training (and evaluation) results. If Part I’s required inventories and folders still exist, Part I need not be repeated solely because Part II’s CSVs were deleted. The full Part II run verifies inventories in II.1, reconstructs inputs and saves the initial model in II.2, trains/selects/evaluates the CNN in II.3 and analyses its saved predictions in II.4. Its model-output step creates `models`. A full run rewrites the corresponding generated artifacts; neither attachment-refresh command performs training or evaluation.
+If Part II’s CSVs are deleted, run Part II fully to recreate its CSVs, figures and CNN training (and evaluation) results. If Part I’s required inventories and folders still exist, Part I need not be repeated solely because Part II’s CSVs were deleted. The full Part II run verifies inventories in II.1, reconstructs inputs and builds the model in memory in II.2, trains/selects/evaluates the CNN in II.3 and analyses its saved predictions in II.4. II.2 and II.3 must run in order in the same kernel session because the model is held in memory. A full run rewrites the corresponding generated artifacts; neither attachment-refresh command performs training or evaluation.
 
-To reproduce only II.4 from retained results, its standalone code cell 8 can run from `draft-A` without rerunning earlier cells. It requires `data/II3_test_predictions.csv`, `data/II3_class_metrics.csv`, `data/II3_run_metadata.json`, `data/II2_input_inventory.csv`, `data/I2_recording_inventory.csv` and `models/II3_selected_model.keras`, plus the output folders. This analyses fixed predictions without additional inference.
+To reproduce only II.4 from retained results, its standalone code cell 8 can run from `draft-A` without rerunning earlier cells. It requires `data/II3_test_predictions.csv`, `data/II3_class_metrics.csv`, `data/II3_run_metadata.json`, `data/II2_input_inventory.csv`, `data/I2_recording_inventory.csv`, plus the output folders. This analyses fixed predictions without additional inference.
 
 #### Why embedded images need refreshing
 
@@ -463,7 +463,7 @@ The convolutions learn local patterns and their combinations. Max pooling reduce
 
 The model is compiled with Adam at a provisional learning rate of 0.001 and sparse categorical cross-entropy on softmax probabilities. Seed 550 is recorded and deterministic TensorFlow operations are requested [II.2-4, II.2-6]. Initialising the optimiser's zero state supports faithful model serialisation without applying updates. An eight-observation training batch produces finite `(8,4)` probabilities in [0,1] with row sums of one and finite loss. Initial loss is a numerical readiness check, not an accuracy or generalisation result. All initial weights are unchanged, and the optimiser iteration count is **zero**. Gradient/update checks and training schedules remain for the later training task.
 
-The input archive is reopened and compared element-for-element. The complete `.keras` model is reloaded, its weights are compared exactly, and its training-batch probabilities reproduce [II.2-5]. No `fit`, optimiser update, validation/test prediction or test performance score is executed in II.2. Part I's previously examined test results do not guide the CNN settings; the reused test set is not described as newly blind. Macro-F1 remains the planned selection metric for later tasks.
+The input archive is reopened and compared element-for-element. The CNN remains in memory for subsequent training; no model archive is written or reloaded. Its training-batch readiness checks verify finite probabilities/loss and unchanged weights. No `fit`, optimiser update, validation/test prediction or test performance score is executed in II.2. Part I's previously examined test results do not guide the CNN settings; the reused test set is not described as newly blind. Macro-F1 remains the planned selection metric for later tasks.
 
 ### Outputs and reproduction
 
@@ -472,7 +472,7 @@ See [Execution Instructions](#execution-instructions) for the runtime, execution
 - `data/II2_model_inputs.npz`: one compressed archive containing `X_`, `y_` and `row_index_` arrays for training, validation and test. Waveforms are float32 and targets int64.
 - `data/II2_input_inventory.csv`: global row index, recording/window keys, target, load, partition and original window hash. The archive row indices link back to this inventory.
 - `data/II2_preparation_metadata.json`: one record of the scaling statistics, class mapping, split counts, source hashes, module hash, seed, versions, readiness checks, initial-state status and saved-artifact fingerprints.
-- `models/II2_initial_model.keras`: one complete, compiled model archive with **initial, untrained** weights and optimiser state; training remains deferred.
+- In-memory CNN: the untrained model created in II.2 is passed directly to II.3 in the same kernel session. After restarting the kernel, rerun II.2 before training. No model archives or `models` folder are created.
 - `data/II2_partition_summary.csv`, `II2_target_mapping.csv`, `II2_preprocessing_checks.csv`, `II2_architecture_summary.csv`: complete supporting tables. Their corresponding PNGs in `figures_of_data/` are embedded exactly once in the notebook, after their explanations. Stored CSV values are not rounded.
 
 The architecture table includes every layer's settings, output shape and trainable count; the total row is a summary and must not be added again when summing per-layer counts. The preparation table contains the fit statistics and check results; the label table makes class encoding explicit. No redundant notebook table displays or model-summary printout repeat these images. The report PDF now covers II.1-II.4 in sixteen A4 pages, with the architecture summary, supporting tables, learning curves and test results; code blocks are replaced by execution-labelled references. Both report covers follow the agreed Part I style without dates.
@@ -487,7 +487,7 @@ The architecture table includes every layer's settings, output shape and trainab
 
 [II.2-4] Keras. [Probabilistic losses](https://keras.io/api/losses/probabilistic_losses/), SparseCategoricalCrossentropy. Integer targets and probability-based cross-entropy. Accessed 18 November 2026.
 
-[II.2-5] Keras. [Whole model saving & loading](https://keras.io/api/models/model_saving_apis/model_saving_and_loading/). A single `.keras` archive stores architecture, weights and optimiser state. Accessed 18 November 2026.
+[II.2-5] Historical reference for the former model-archive implementation; the current notebook keeps the model in memory and does not save model archives.
 
 [II.2-6] Keras. [set_random_seed](https://keras.io/api/utils/python_utils/#set_random_seed-function). Random-seed control and reproducibility limits. Accessed 18 November 2026.
 
@@ -506,7 +506,7 @@ Signal preparation and provenance follow Part I's original sources and audit, no
 
 ### Protocol fixed before training
 
-The simplified plan uses one pre-specified seeded run, one custom callback, three principal result tables and two figures. The II.2 prepared tensors, training-only scaling, class mapping and two-convolution architecture are unchanged. Training starts from `models/II2_initial_model.keras`, whose saved fingerprint and zero optimiser iteration count are verified. Training and validation arrays are loaded first; test arrays are accessed only after checkpoint selection is complete.
+The simplified plan uses one pre-specified seeded run, one custom callback, three principal result tables and two figures. The II.2 prepared tensors, training-only scaling, class mapping and two-convolution architecture are unchanged. Training uses the untrained model created in II.2 in the same kernel session, with zero optimiser iterations verified before fitting. Training and validation arrays are loaded first; test arrays are accessed only after checkpoint selection is complete.
 
 | Setting | Fixed value |
 |---|---|
@@ -528,7 +528,7 @@ The custom callback runs after each epoch using the completed epoch's weights in
 
 The weighted batch optimisation loss from Keras is stored separately as `weighted_optimization_loss`. It is not compared directly with unweighted validation loss in the plot. Instead, both plotted losses are unweighted and recomputed after the epoch, using the same weights. The second panel plots training/validation macro-F1. The selected epoch is marked in both panels. This separates probability-sensitive cross-entropy from decision-based F1: probabilities and loss can improve without changing the class argmax. No optimiser search, learning-rate schedule, architecture change or repeated-seed selection is performed.
 
-Training completed **46 epochs**, stopping after 15 consecutive epochs failed to exceed the epoch-31 validation macro-F1. Epoch **31** was selected with training macro-F1 **0.9916643512**, validation macro-F1 **0.9686842151**, training loss **0.0818050727** and validation loss **0.1062805206**. By epoch 46, training macro-F1 was 0.9968748779 and validation macro-F1 0.9580419580. The last epoch's slightly lower validation loss (0.1060379595) did not change the macro-F1 selection rule. The chosen checkpoint contains 775 Adam updates: 31 epochs times 25 training batches. The final in-memory epoch is not used for test evaluation; the selected checkpoint is reloaded and its validation macro-F1 reproduced first.
+Training completed **46 epochs**, stopping after 15 consecutive epochs failed to exceed the epoch-31 validation macro-F1. Epoch **31** was selected with training macro-F1 **0.9916643512**, validation macro-F1 **0.9686842151**, training loss **0.0818050727** and validation loss **0.1062805206**. By epoch 46, training macro-F1 was 0.9968748779 and validation macro-F1 0.9580419580. The last epoch's slightly lower validation loss (0.1060379595) did not change the macro-F1 selection rule. The callback copies weights whenever validation macro-F1 strictly improves and restores the epoch-31 weights before test inference. The optimiser retains its state from the completed run; it is not restored because no further fitting follows. The final epoch weights are not used for test evaluation. The restored weights reproduce the selected validation macro-F1 first.
 
 ### Classification evaluation and interpretation
 
@@ -557,7 +557,7 @@ Training and validation performance are higher than test performance. Continued 
 
 ### Saved outputs and notebook presentation
 
-- `models/II3_selected_model.keras`: the single selected trained checkpoint, including its optimiser state; it does not replace the initial II.2 model.
+- Selected weights in memory: the callback stores an independent copy of the best validation weights and restores it to the existing model before test evaluation. There is no model file. To use the model after a kernel restart, rebuild and retrain; II.4 needs only saved CSVs and metadata.
 - `data/II3_epoch_history.csv`: all 46 epochs, weighted optimisation loss, unweighted epoch-end training/validation losses, macro-F1 values and strict-best flags.
 - `data/II3_run_metadata.json`: the protocol written before training, initial/input hashes, selected epoch, actual stopping reason, selected-model fingerprint, timing, versions and frozen test results. The final `test_inference_passes` value is 1.
 - `data/II3_training_summary.csv`, `II3_test_metrics.csv`, `II3_class_metrics.csv`: the three principal tables, with full stored precision and four-decimal metric displays in their PNG counterparts.
@@ -592,7 +592,7 @@ Three new main notebook code cells train/select (Nb code cell 5), evaluate (cell
 
 II.4 analyses the test predictions saved in II.3. “Frozen predictions” means retaining those predictions and the epoch-31 selected model, with no retraining, additional inference or test-guided adjustment. Notebook code cell 8 is a standalone analysis of saved CSVs; it does not load TensorFlow or the model. See [Execution Instructions](#execution-instructions) for running II.4 independently from saved artifacts.
 
-The code checks that the 400 prediction row indices uniquely and completely match the II.2 test inventory, verifies recording/window/class identities and test load, and joins the audited recording metadata. It aggregates all ten test recordings, including successes, into error counts, percentages and wrong-label destinations. Source fingerprints verify that the inputs, predictions, metrics and checkpoint remain unchanged.
+The code checks that the 400 prediction row indices uniquely and completely match the II.2 test inventory, verifies recording/window/class identities and test load, and joins the audited recording metadata. It aggregates all ten test recordings, including successes, into error counts, percentages and wrong-label destinations. Source fingerprints verify that the inputs, predictions and metrics remain unchanged.
 
 Recording 172 (inner race, 0.014 inches) has 40/40 errors, all predicted outer race; recording 200 (outer race, 0.014 inches) has 25/40 errors, all predicted inner race; recording 188 (ball, 0.014 inches) has 3/40 errors, all predicted normal. The other seven recordings have no errors. Inner/outer confusions account for 65/68 errors (95.6%). The table and plot include every recording, rather than selecting only failures.
 
@@ -645,3 +645,13 @@ Documentation update (19 November 2026): consolidated setup, Part I/Part II exec
 Part II repair validation: ran all eight code cells in an isolated copy containing original recordings and Part I CSVs, with no Part II results or images initially present. Recreated all 13 Part II CSVs, nine table PNGs and three plot PNGs, plus the input archive, metadata and initial/selected model files. Verified all 12 refreshed attachments exactly match their external PNGs; refresh preserved cell source, saved outputs, data and model hashes. A missing-image check failed before writing and left the notebook unchanged. The project’s existing CNN training (and evaluation) results were preserved; the verification run remained isolated.
 
 PDF update (19 November 2026): both reports now include the current Execution Instructions as a linked appendix. Part I contains 30 A4 pages; Part II contains 16 A4 pages. Existing report body pages, compact tables, figures and grey frames were preserved. Complete appendix wording, A4 page sizes, contents destinations and page numbering were checked.
+
+### Simplification - CNN weights retained in memory
+
+Both model archives have been removed. II.2 builds/checks the untrained CNN in memory; II.3 trains that same object. The callback copies the weights for each strict validation macro-F1 improvement using `get_weights()`, then restores the selected copy using `set_weights()` before test access. Architecture, initial seed, class weights, optimiser, stopping/selection rules and test protocol are unchanged. Optimiser state is not rewound and is not used again after selection. No `models` folder or model-file hashes are required. Saved tensors, history, predictions and classification results remain supporting evidence; II.4 checks those files without requiring a CNN archive. Earlier AI Log entries describe the implementation at their original dates.
+
+| Date | Tool used | Essence of major prompts | What was kept | What was changed |
+|---|---|---|---|---|
+| 2026-11-19 | ChatGPT/Codex with Python | Remove both model archives and simplify code and explanations. | Architecture, seeded initialisation, training settings, validation selection and evaluation rules. | Retained the CNN and selected weights in memory; removed model save/load steps, archive hashes and II.4 model-file dependency; updated supporting checks, table wording and execution guidance. |
+
+Verification of archive removal: a full isolated run created no model folder or model archives, completed 46 epochs and selected epoch 31. The epoch history, test predictions, classification metrics, confusion counts, recording errors and architecture summary matched the previous results (relative tolerance 1e-10, absolute tolerance 1e-12). Accuracy remains 0.8300, macro-F1 0.8519 and errors 68. Updated preparation checks, training-summary wording, JSON provenance and embedded table images; removed the two old archives after verification.

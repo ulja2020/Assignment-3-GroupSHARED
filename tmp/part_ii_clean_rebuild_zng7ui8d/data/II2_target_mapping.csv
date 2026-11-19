@@ -1,5 +1,0 @@
-class_index,class_name,training,validation,test,all_windows
-0,normal,58,40,40,138
-1,inner_race,240,120,120,480
-2,ball,240,120,120,480
-3,outer_race,240,120,120,480

@@ -1,0 +1,20 @@
+{
+  "task": "II.4",
+  "investigation": "B - Prediction Errors",
+  "source_sha256": {
+    "data\\II3_test_predictions.csv": "32f1be7c61316a0e09232e00ef5866fe5f6b8dee64bed7b4e00b6853333a308c",
+    "data\\II3_class_metrics.csv": "c84d040984897fc2d62a374ebf77856d33f5c548b05de6f8f9aa536a2f5ed4d5",
+    "data\\II2_input_inventory.csv": "9bfeae0b198faf92396c38990bf921b3fd68123408de7830523ad858bab10d8b",
+    "data\\I2_recording_inventory.csv": "7418235d5631b3bc2810ece7ff59dcea550eb3209c088878e890d95a3cd16512",
+    "data\\II3_run_metadata.json": "ca770e89bba076368614efa5aea2b3bce189b9ea6f02f8daeee251528d809e43",
+    "models\\II3_selected_model.keras": "cbb5f15152d0566211aa7fee5ae805a6e1ee1a08c2a29f05535cce4538fde6c4"
+  },
+  "test_windows": 400,
+  "test_recordings": 10,
+  "errors": 68,
+  "recordings_with_errors": 3,
+  "inner_outer_confusions": 65,
+  "model_retrained": false,
+  "additional_inference": false,
+  "checks": "Unique and complete test rows; recording/window/class alignment; source hashes unchanged"
+}

@@ -1,0 +1,17 @@
+actual_class,predicted_class,count,row_percentage
+normal,normal,40,100.0
+normal,inner_race,0,0.0
+normal,ball,0,0.0
+normal,outer_race,0,0.0
+inner_race,normal,0,0.0
+inner_race,inner_race,80,66.66666666666667
+inner_race,ball,0,0.0
+inner_race,outer_race,40,33.333333333333336
+ball,normal,3,2.5
+ball,inner_race,0,0.0
+ball,ball,117,97.5
+ball,outer_race,0,0.0
+outer_race,normal,0,0.0
+outer_race,inner_race,25,20.833333333333332
+outer_race,ball,0,0.0
+outer_race,outer_race,95,79.16666666666667

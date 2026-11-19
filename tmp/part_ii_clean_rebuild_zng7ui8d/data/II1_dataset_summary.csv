@@ -1,0 +1,16 @@
+item,value
+Dataset,CWRU Bearing Data Center; same selected recordings as Part I
+Original recordings,40
+Derived windows,1578 (dependent within recordings)
+Classification target,"Normal, inner-race fault, ball fault, outer-race fault"
+Class window counts,Normal: 138; each fault class: 480
+Prepared sampling rate,"12,000 Hz"
+Window duration,0.25 seconds; non-overlapping
+Input values per window,3000 acceleration samples
+Input channels,1 (drive-end acceleration)
+Planned input layout,"(1578, 3000, 1): windows, time steps, channel"
+Input preparation,"Reuse Part I resampling, filtering and edge trimming; mean-centre each window"
+Excluded predictors,Operating metadata and the eight engineered SVM descriptors
+Architecture selected,Option B: compact 1-D CNN; detailed layers and training are deferred
+Retained split counts,Training: 778; validation: 400; test: 400
+Implementation status,II.1 scope: counts verified; tensor preparation and model implementation follow in II.2

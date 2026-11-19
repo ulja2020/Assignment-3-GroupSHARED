@@ -9,6 +9,54 @@
 - `models/`: saved model archives with explicit initial/trained status.
 - Notebook and documentation: directly within mother folder.
 
+## Execution Instructions
+
+### Execution sequence
+
+Follow this sequence for a complete rebuild, using `draft-A` as the working directory:
+
+```text
+1. Select the intended Python environment and notebook kernel.
+   If required, install dependencies: python -m pip install -r requirements.txt
+2. Open Part_I_SVM.ipynb, restart its kernel and run all cells in notebook order.
+3. Save and close Part_I_SVM.ipynb.
+   Run: python refresh_part_i_images.py
+   Reopen it to view the refreshed images.
+4. Open Part_II_CNN.ipynb, restart its kernel and run all cells in notebook order.
+5. Save and close Part_II_CNN.ipynb.
+   Run: python refresh_part_ii_images.py
+   Reopen it to view the refreshed images.
+6. Regenerate the PDF reports separately when their displayed content changes.
+```
+
+### Considerations and exceptions
+
+#### Environment and retained source files
+
+Keep both notebooks beside `signal_preparation.py`, `requirements.txt`, `refresh_part_i_images.py` and `refresh_part_ii_images.py`. The Part II utility reuses the attachment-refresh function in the Part I utility, so keep both files together. No separate image-rebuilding script is required.
+
+The recorded execution environment is Python 3.14.7, TensorFlow 2.22.0-rc0, Keras 3.16.0.dev2026110403 (the `keras-nightly` distribution) and h5py 3.15.1; other package versions are in `requirements.txt`. These include prerelease framework versions. Matching the seed does not guarantee bitwise-identical results across framework versions or hardware.
+
+Preserve `public_dataset`, including cached source pages, original MAT recordings and the acquisition manifest. Part I reuses cached files after checksum verification. If the cache is missing, acquisition requires access to the original CWRU URLs. Raw downloads total approximately 140 MB and are excluded from version control.
+
+#### When a full run is required
+
+Running Part I first supplies the required folders and inventories. If all CSVs are deleted, Part I must run before Part II because Part II reuses Part I’s data inventories. Part I creates `data`, `figures` and `figures_of_data` automatically, including when those directories were removed. It recreates 17 CSVs, 17 table PNGs and eight plot PNGs, and repeats its model selection and evaluation. The ten I.2/I.3 table images are rendered immediately after their CSVs are written; I.4/I.5 retain their existing rendering steps.
+
+If Part II’s CSVs are deleted, run Part II fully to recreate its CSVs, figures and CNN training (and evaluation) results. If Part I’s required inventories and folders still exist, Part I need not be repeated solely because Part II’s CSVs were deleted. The full Part II run verifies inventories in II.1, reconstructs inputs and saves the initial model in II.2, trains/selects/evaluates the CNN in II.3 and analyses its saved predictions in II.4. Its model-output step creates `models`. A full run rewrites the corresponding generated artifacts; neither attachment-refresh command performs training or evaluation.
+
+To reproduce only II.4 from retained results, its standalone code cell 8 can run from `draft-A` without rerunning earlier cells. It requires `data/II3_test_predictions.csv`, `data/II3_class_metrics.csv`, `data/II3_run_metadata.json`, `data/II2_input_inventory.csv`, `data/I2_recording_inventory.csv` and `models/II3_selected_model.keras`, plus the output folders. This analyses fixed predictions without additional inference.
+
+#### Why embedded images need refreshing
+
+External PNG files and embedded markdown attachments are separate copies. Running notebook code regenerates files on disk but does not automatically replace saved markdown attachments. The refresh commands update 18 Part I images and 12 Part II images from their respective external PNGs. Each image cell records its source directory in metadata, disambiguating table and plot PNGs with the same filename.
+
+Save and close the relevant notebook before refreshing, then reopen it. This prevents an editor from overwriting refreshed attachments with older copies. The shared refresh function reads all required images before writing; a missing image leaves the notebook unchanged. It preserves code, saved execution outputs and numerical results.
+
+#### PDF exports
+
+PDFs are separate exports. Running notebook cells or refreshing markdown attachments does not update them. Regenerate the relevant PDF after changes to displayed notebook content, then check figures, tables and notebook cell references.
+
 ## Task I.1 - Engineering Problem and Dataset
 
 ### Source notes
@@ -135,7 +183,7 @@ Scaling is defined as an unfitted pipeline and will be fitted only within traini
 
 ### Execution
 
-Open `Part_I_SVM.ipynb` with `draft-A` as the working directory and run cells in order. Install the recorded dependencies from `requirements.txt` if necessary. Acquisition cells use the original CWRU URLs and reuse locally cached files after checksum verification. Raw data total approximately 140 MB and are excluded from version control; acquisition code is contained in the notebook. All generated CSVs and PNGs are reproducible from the retained original recordings. The notebook retains its executed tables and images.
+See [Execution Instructions](#execution-instructions) for setup, notebook order and image refresh.
 
 ### Sources for Task I.2
 
@@ -383,7 +431,7 @@ The input archive is reopened and compared element-for-element. The complete `.k
 
 ### Outputs and reproduction
 
-Run `Part_II_CNN.ipynb` top to bottom with `draft-A` as the working directory. Both notebooks must remain beside `signal_preparation.py`. The existing runtime is Python 3.14.7, TensorFlow 2.22.0-rc0 and Keras 3.16.0.dev2026110403, supplied by the installed `keras-nightly` distribution. These existing prerelease versions and h5py 3.15.1 are recorded in the metadata and requirements; no runtime installation or upgrade was performed. Reproduction across different framework versions/hardware is not assumed bitwise identical merely because the seed matches.
+See [Execution Instructions](#execution-instructions) for the runtime, execution order and reproduction notes.
 
 - `data/II2_model_inputs.npz`: one compressed archive containing `X_`, `y_` and `row_index_` arrays for training, validation and test. Waveforms are float32 and targets int64.
 - `data/II2_input_inventory.csv`: global row index, recording/window keys, target, load, partition and original window hash. The archive row indices link back to this inventory.
@@ -506,7 +554,7 @@ Three new main notebook code cells train/select (Nb code cell 5), evaluate (cell
 
 ### Option B - Prediction Errors
 
-II.4 analyses the test predictions saved in II.3. “Frozen predictions” means retaining those predictions and the epoch-31 selected model, with no retraining, additional inference or test-guided adjustment. Notebook code cell 8 is a standalone analysis of saved CSVs; it does not load TensorFlow or the model. Run it from `draft-A` after the II.3 artifacts exist. Earlier cells need not be rerun to reproduce II.4.
+II.4 analyses the test predictions saved in II.3. “Frozen predictions” means retaining those predictions and the epoch-31 selected model, with no retraining, additional inference or test-guided adjustment. Notebook code cell 8 is a standalone analysis of saved CSVs; it does not load TensorFlow or the model. See [Execution Instructions](#execution-instructions) for running II.4 independently from saved artifacts.
 
 The code checks that the 400 prediction row indices uniquely and completely match the II.2 test inventory, verifies recording/window/class identities and test load, and joins the audited recording metadata. It aggregates all ten test recordings, including successes, into error counts, percentages and wrong-label destinations. Source fingerprints verify that the inputs, predictions, metrics and checkpoint remain unchanged.
 
@@ -535,3 +583,27 @@ Each image is embedded once after its explanation. Code cell 8 produces no dupli
 |---|---|---|---|---|
 | 2026-11-18 | ChatGPT/Codex with Python and CWRU documentation | After explicit execution instruction, implement Option B, explain frozen predictions briefly, and provide an evidence-based error analysis. | Saved II.3 predictions, selected model, partitions, earlier notebook cells and numerical results. | Added code cell 8, checked recording joins, all-ten-recording table and error-rate figure, source hash audit, clear explanations, engineering hypotheses and limits. No retraining, inference or model tuning. |
 | 2026-11-18 | ChatGPT/Codex with Python and PDF rendering | Update the Part II PDF to include II.4. | Existing II.1-II.3 body pages, formatting, grey frames and code references. | Added three II.4 pages; verified all II.4 prose and 80 table values, eight code references, twelve frames and four contents destinations; visually reviewed the new pages. |
+
+## Part I - Output regeneration notes
+
+The setup cell now creates `data`, `figures` and `figures_of_data`, including when these directories have been removed. The ten I.2/I.3 CSV tables previously had no notebook rendering calls; they now use the early `render_data_table` helper immediately after each CSV is written. It retains every row and CSV value, the two-line title with the existing notebook code-cell number, and the established table colours. Existing I.4/I.5 table rendering remains in place. The analytical calculations, splits and model settings are unchanged.
+
+For the rebuild and attachment-refresh steps, see [Execution Instructions](#execution-instructions).
+
+### AI Log - Part I regeneration fix
+
+| Date | Tool used | Essence of major prompts | What was kept | What was changed |
+|---|---|---|---|---|
+| 2026-11-19 | ChatGPT/Codex with Python | Fix Part I output regeneration, create missing folders, add missing table rendering, explain attachment refresh and verify a clean rebuild. | Existing analysis, partitions, model settings, code-cell order and numerical results. | Added early CSV table renderer and ten I.2/I.3 calls, automatic table-folder creation, explicit image-source metadata and a separate attachment refresh utility; documented the rebuild sequence. |
+
+Validation: executed every Part I code cell in an isolated directory initially containing only the notebook, shared preparation module and original source cache. Recreated all 17 CSVs, 17 table PNGs and eight plots. All CSV values matched the existing results (floating-point tolerance 1e-10 relative, 1e-12 absolute). Verified all 18 refreshed attachments exactly match their source PNGs and that refreshing preserves cell source and saved outputs.
+
+Documentation update (19 November 2026): consolidated setup, Part I/Part II execution order, clean regeneration, Part I attachment refresh, standalone II.4 execution and PDF export guidance under Execution Instructions. No notebook code or numerical artifacts changed.
+
+### AI Log - Part II attachment refresh
+
+| Date | Tool used | Essence of major prompts | What was kept | What was changed |
+|---|---|---|---|---|
+| 2026-11-19 | ChatGPT/Codex with Python | Implement the agreed full-run workflow, Part II attachment refresh and consolidated execution sequence with considerations below and no bold text. | CNN architecture, training/evaluation rules and existing numerical artifacts. | Added Part II image-source metadata and refresh command reusing the Part I helper; reorganised Execution Instructions and tested a full isolated Part II rebuild. |
+
+Part II repair validation: ran all eight code cells in an isolated copy containing original recordings and Part I CSVs, with no Part II results or images initially present. Recreated all 13 Part II CSVs, nine table PNGs and three plot PNGs, plus the input archive, metadata and initial/selected model files. Verified all 12 refreshed attachments exactly match their external PNGs; refresh preserved cell source, saved outputs, data and model hashes. A missing-image check failed before writing and left the notebook unchanged. The project’s existing CNN training (and evaluation) results were preserved; the verification run remained isolated.

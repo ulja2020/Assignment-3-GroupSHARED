@@ -1,0 +1,8 @@
+layer,settings,output_shape,trainable_parameters
+Input: acceleration,3000 time steps; 1 acceleration channel,"(None, 3000, 1)",0
+conv_local,16 filters; kernel=15; stride=1; same padding; ReLU; bias=True,"(None, 3000, 16)",256
+max_pool,Pool size=4; stride=4; valid padding,"(None, 750, 16)",0
+conv_patterns,32 filters; kernel=7; stride=1; same padding; ReLU; bias=True,"(None, 750, 32)",3616
+global_average,Average each of 32 feature maps across 750 temporal positions,"(None, 32)",0
+bearing_condition,4 units; softmax; bias=True,"(None, 4)",132
+TOTAL,Two Conv1D layers; no model fitting performed,"(None, 4)",4004

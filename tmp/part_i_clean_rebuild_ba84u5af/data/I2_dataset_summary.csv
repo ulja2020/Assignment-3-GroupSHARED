@@ -1,0 +1,4 @@
+measurement,value
+Model input dimensions,1578 observations x 8 float64 features
+Exact duplicate feature vectors,0
+Discarded final partial-window samples,"33,787 at 12 kHz"

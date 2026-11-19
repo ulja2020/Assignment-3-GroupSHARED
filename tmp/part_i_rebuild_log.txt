@@ -1,0 +1,45 @@
+TEST DIRECTORY C:\Users\claud\Assignment-3-GroupSHARED\tmp\part_i_clean_rebuild_ba84u5af
+40 original files; 140,322,880 bytes.
+             Version
+python        3.14.7
+numpy          2.5.3
+pandas         3.0.6
+scipy         1.18.1
+matplotlib    3.11.2
+scikit-learn   1.9.1
+PASS 4 seconds 3.4
+   recording_id      variable     duplicate_of
+6            99  X098_DE_time  98:X098_DE_time
+7            99  X098_FE_time  98:X098_FE_time
+Selected DE NaNs: 0 | infinities: 0
+Exact duplicate selected DE signals: 0
+Longest exactly constant run: 3 samples
+PASS 6 seconds 1.4
+PASS 10 seconds 10.9
+      rms  peak_to_peak  ...  low_band_fraction  mid_band_fraction
+0  0.0632        0.4406  ...             0.2377             0.1168
+1  0.0630        0.4107  ...             0.2811             0.1140
+2  0.0625        0.4494  ...             0.2353             0.1278
+3  0.0629        0.4430  ...             0.2768             0.1162
+4  0.0615        0.4120  ...             0.2291             0.1250
+
+[5 rows x 8 columns]
+PASS 14 seconds 0.0
+PASS 18 seconds 3.9
+PASS 33 seconds 1.4
+Prepared X: (1578, 8) | target: (1578,) | recording groups: 40
+Scaling pipeline created without fitting. No classifier is trained in Task I.2.
+PASS 39 seconds 0.0
+            recordings  windows
+partition                      
+training            20      778
+validation          10      400
+test                10      400
+Majority baseline: ball; validation macro-F1 = 0.1154
+All partition checks passed. No test predictions or test scores were computed.
+PASS 42 seconds 3.2
+PASS 44 seconds 8.2
+PASS 45 seconds 1.4
+PASS 53 seconds 0.4
+PASS 54 seconds 1.2
+VERIFIED 17 CSVs 17 table PNGs 8 plots; all CSV values match.

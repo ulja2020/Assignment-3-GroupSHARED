@@ -1,0 +1,15 @@
+item,value
+Architecture,"Two Conv1D layers; 4,004 trainable parameters; unchanged from II.2"
+Optimiser / learning rate,Adam / 0.001
+Optimisation loss,Sparse categorical cross-entropy with balanced training class weights
+Training class weights,Normal: 3.353448; each fault class: 0.810417
+Batch size / random seed,32 / 550
+Maximum epochs,100
+Selection and tie rule,Highest validation macro-F1; earliest exact tie; restore copied weights in memory
+Stopping rule,"15 consecutive epochs without improvement, or epoch 100"
+Completed epochs,46
+Selected epoch,31
+Selected validation macro-F1,0.968684
+Actual stopping reason,validation macro-F1 patience reached
+Loss learning curves,"Unweighted training/validation cross-entropy, recomputed at epoch end"
+Test procedure,One inference pass after checkpoint selection; no subsequent tuning

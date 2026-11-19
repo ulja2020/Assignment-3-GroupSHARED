@@ -1,0 +1,2 @@
+model,accuracy,macro_precision,macro_recall,macro_f1,test_windows
+CNN,0.83,0.8489602559370001,0.8583333333333333,0.8518515860413608,400

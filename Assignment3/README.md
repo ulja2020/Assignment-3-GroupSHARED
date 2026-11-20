@@ -72,7 +72,7 @@ The saved notebook outputs were produced in these environments:
 
 | Notebook | Environment of the saved run |
 |---|---|
-| Part I | Windows, Python 3.13.7, numpy 2.1.3, pandas 2.2.3, scipy 1.14.1, matplotlib 3.9.2, scikit-learn 1.5.2 (shown in the output of code cell 1) |
+| Part I | Windows, Python 3.14.7, numpy 2.5.3, pandas 3.0.6, scipy 1.18.1, matplotlib 3.11.2, scikit-learn 1.9.1 (verified rerun, 20 November 2026; shown in the output of code cell 1) |
 | Part II | Python 3.14.7, numpy 2.5.3, scipy 1.18.1, TensorFlow 2.22.0rc0, Keras 3.16.0.dev2026110403 (`keras-nightly`), h5py 3.15.1 (stored in `data/II2_preparation_metadata.json`) |
 
 Notes:
@@ -174,7 +174,6 @@ AI tools were used for code, debugging, figures and documentation, as allowed by
 | 18 Nov | ChatGPT/Codex (Python, TensorFlow/Keras) | Tasks II.3-II.4: training protocol, learning curves, test evaluation, error analysis (Option B) | Kept one seeded run, epoch 31 selected on validation, test scored once; error analysis without retraining. |
 | 19 Nov | ChatGPT/Codex (Python) | Re-run fixes: create output folders, render all table images, image-refresh scripts, keep the CNN in memory (no model files), run instructions | Kept all analysis and results; a clean rebuild gave the same results. |
 | 19 Nov | Claude (Anthropic) | Shortened this README; wrote an explanation of every code cell for our own understanding; made a guide with evidence and points (no answer text) for the individual questions; test re-run of both notebooks | [fill in what you kept or changed] |
-
 
 ## Group contributions
 

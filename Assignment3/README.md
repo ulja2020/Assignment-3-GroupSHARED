@@ -1,8 +1,6 @@
 # MOD550 Assignment 3 - Bearing fault classification with SVM and CNN
 
-**Group Members:** see [Group contributions](#group-contributions)
-
-We classify short windows of drive-end bearing vibration from the CWRU Bearing Data Center into four classes: **normal, inner-race fault, ball fault and outer-race fault**.
+We classified short windows of drive-end bearing vibration from the CWRU Bearing Data Center into four classes: **normal, inner-race fault, ball fault and outer-race fault**.
 
 - **Part I** (`Part_I_SVM.ipynb`) compares linear and RBF support vector machines on eight engineered features, with logistic regression as the alternative classifier.
 - **Part II** (`Part_II_CNN.ipynb`) trains a compact one-dimensional CNN on the raw 0.25-second windows.
@@ -38,11 +36,11 @@ The majority-class baseline scores a validation macro-F1 of 0.1154. Details and 
 
 ## Dataset
 
-**Citation:** Case Western Reserve University, Bearing Data Center. *Bearing Data Center* [dataset]. https://engineering.case.edu/bearingdatacenter (accessed 15 November 2026).
+**Source:** Case Western Reserve University, Bearing Data Center. *Bearing Data Center* [dataset]. https://engineering.case.edu/bearingdatacenter (accessed 15 November 2026).
 
 The data are real laboratory measurements from a 2 hp motor test rig. Faults were seeded by electro-discharge machining in SKF 6205-2RS JEM drive-end bearings. The signal used is the drive-end acceleration.
 
-We use 40 recordings: the four normal baselines and the 12 kHz drive-end fault recordings. Each class and fault size has one recording per motor load (0, 1, 2 and 3 HP).
+We used 40 recordings: the four normal baselines and the 12 kHz drive-end fault recordings. Each class and fault size has one recording per motor load (0, 1, 2 and 3 HP).
 
 | Class | Fault diameter (inch) | Official labels | File numbers | Sampling rate |
 |---|---|---|---|---|
@@ -51,7 +49,7 @@ We use 40 recordings: the four normal baselines and the 12 kHz drive-end fault r
 | Ball | 0.007 / 0.014 / 0.021 | B007, B014, B021 (_0 to _3) | 118-121, 185-188, 222-225 | 12 kHz |
 | Outer race, 6 o'clock | 0.007 / 0.014 / 0.021 | OR007@6, OR014@6, OR021@6 (_0 to _3) | 130-133, 197-200, 234-237 | 12 kHz |
 
-**Download:** you do not need to download anything by hand.
+**Download:** it is not needed to download anything by hand.
 
 - Part I (code cell 1) finds each file by its official label in the CWRU tables and downloads it from `https://engineering.case.edu/sites/default/files/<number>.mat`.
 - It stores every file's SHA-256 fingerprint in `public_dataset/acquisition_manifest.json` and checks the files against these fingerprints on later runs.
@@ -85,25 +83,22 @@ Notes:
 ## How to run
 
 1. **Install** the packages listed above in the Python environment used by the notebook kernel.
-2. **Open the project folder**, the folder that contains both notebooks, in VS Code or Jupyter. The notebooks use this folder as their working folder. If it is wrong, the first code cell stops and explains how to fix it with `os.chdir(...)`.
+2. **Open the project folder**, which is the folder that contains both notebooks. The folder can be opened using VS Code or Jupyter. The notebooks use this folder as their working folder, and if there is an issue with the folder location, the first code cell stops and explains how to fix it with `os.chdir(...)`.
 3. **Run Part I:** open `Part_I_SVM.ipynb`, restart the kernel, then *Run All*. It takes about 30 seconds once the data are saved. The first run also downloads about 140 MB. It creates `data/`, `figures/` and `figures_of_data/` if they are missing.
-4. **Run Part II:** open `Part_II_CNN.ipynb`, restart the kernel, then *Run All*. It takes about 3 minutes, mostly CNN training. Part II reads Part I's CSV files.
+4. **Run the image-refresh utility Part I:** save and close Part_I_SVM.ipynb. Run: python refresh_part_i_images.py. Reopen it to view the refreshed images.
+5. **Run Part II:** open `Part_II_CNN.ipynb`, restart the kernel, then *Run All*. It takes about 3 minutes, mostly CNN training. Part II reads Part I's CSV files.
     - **On a new computer, always run Part I first.** Part II checks that its windows match the fingerprints Part I saved. Tiny numerical differences between computers in the 48-to-12 kHz resampling change the fingerprints of the 138 normal windows, so old CSV files from another computer make Part II stop.
-5. **Optional: refresh the embedded images.** The pictures in the notebooks are saved copies of the PNG files; running the code does not update them. To update them:
-    - save and close the notebook;
-    - run `python refresh_part_i_images.py` (or `python refresh_part_ii_images.py`) in the project folder;
-    - reopen the notebook.
+6. **Run the image-refresh utility Part II:** save and close Part_II_CNN.ipynb. Run: python refresh_part_ii_images.py. Reopen it to view the refreshed images.
 
-    The scripts only replace the embedded images. They do not run code or change results.
 
 Notes:
 
+- Steps 4 and 6 described above are precaution steps to ensure that the figures embedded in the notebooks are the latest ones. The scripts run in these steps only replace the embedded images. They do not run code or change results. The reason to take these precaution steps is because the figures (images) embedded in the notebooks are static copies of the PNG files from a previews execution; Running the code creates CSV files, figures and model results, but does not automatically update the embedded figures displayed in the notebooks. After execution, saving and closing each notebook, running its corresponding image-refresh utility, and reopening each notebook, ensures that the displayed figures reflect the latest results, whether running the notebooks for the first time or repeating the analysis.
 - `signal_preparation.py` is used automatically by both notebooks when called. Keep it beside the notebooks; do not run it separately.
-
 - In Part II, code cells 1-7 must run in one session. The CNN is kept in memory and no model file is saved, so after a kernel restart Part II must be run again from the top.
 - Code cell 8 (Task II.4) only reads saved files and can be run on its own.
-- **Randomness:** Part I contains no random steps; the split is fixed by load. Part II uses seed 550 and deterministic TensorFlow operations. On other hardware or package versions the losses can differ in the last decimals.
-- **Re-run check (19 November 2026):** both notebooks were re-run from scratch on Linux with Python 3.13, TensorFlow 2.21 and Keras 3.15. Only the font paths and the version lookup in Part II code cell 3 were adjusted for that computer. All Part I results were identical (only the fingerprints of the 138 normal windows differed, as explained in step 4). The CNN again ran 46 epochs, selected epoch 31 and gave the same test predictions and metrics.
+- Randomness: Part I contains no random steps; the split is fixed by load. Part II uses seed 550 and deterministic TensorFlow operations. On other hardware or package versions the losses can differ in the last decimals.
+- Re-run check (19 November 2026): both notebooks were re-run from scratch on Linux with Python 3.13, TensorFlow 2.21 and Keras 3.15. Only the font paths and the version lookup in Part II code cell 3 were adjusted for that computer. All Part I results were identical (only the fingerprints of the 138 normal windows differed, as explained in step 4). The CNN again ran 46 epochs, selected epoch 31 and gave the same test predictions and metrics.
 
 ## References
 
@@ -134,13 +129,6 @@ None of these grants a dataset licence.
 - [I.2-4] SciPy. [sosfiltfilt](https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.sosfiltfilt.html).
 - [I.2-5] SciPy. [kurtosis](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.kurtosis.html).
 - [I.2-6] Hendriks, J., Dumond, P., and Knox, D. A. (2022). Towards better benchmarking using the CWRU bearing fault dataset. *Mechanical Systems and Signal Processing*, 169, 108732. https://doi.org/10.1016/j.ymssp.2021.108732.
-- [I.2-7] scikit-learn. [StandardScaler](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html).
-
-### Sources for Task I.3
-
-- [I.3-1] Hendriks et al. (2022), see [I.2-6]: bearings are shared across operating conditions.
-- [I.3-2] scikit-learn. [f1_score](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.f1_score.html).
-- [I.3-3] scikit-learn. [DummyClassifier](https://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.html).
 
 ### Sources for Task I.4
 
@@ -148,16 +136,9 @@ None of these grants a dataset licence.
 - [I.4-2] scikit-learn. [PredefinedSplit](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.PredefinedSplit.html) and [GridSearchCV](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html).
 - [I.4-3] scikit-learn. [RBF SVM parameters](https://scikit-learn.org/stable/auto_examples/svm/plot_rbf_parameters.html).
 
-### Sources for Task I.5
-
-- [I.5-1] scikit-learn. [LogisticRegression](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html).
-- [I.5-2] scikit-learn. [precision_recall_fscore_support](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.precision_recall_fscore_support.html).
-- [I.5-3] scikit-learn. [confusion_matrix](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.confusion_matrix.html).
-
 ### Sources for Task II.1
 
-- [II.1-1] CWRU Bearing Data Center. [Apparatus and Procedures](https://engineering.case.edu/bearingdatacenter/apparatus-and-procedures). Accessed 18 November 2026.
-- [II.1-2] Keras. [Conv1D layer](https://keras.io/api/layers/convolution_layers/convolution1d/).
+- [II.1-1] Keras. [Conv1D layer](https://keras.io/api/layers/convolution_layers/convolution1d/).
 
 ### Sources for Task II.2
 
@@ -165,15 +146,12 @@ None of these grants a dataset licence.
 - [II.2-2] Keras. [Conv1D layer](https://keras.io/api/layers/convolution_layers/convolution1d/).
 - [II.2-3] Keras. [MaxPooling1D](https://keras.io/api/layers/pooling_layers/max_pooling1d/) and [GlobalAveragePooling1D](https://keras.io/api/layers/pooling_layers/global_average_pooling1d/).
 - [II.2-4] Keras. [Probabilistic losses](https://keras.io/api/losses/probabilistic_losses/) (SparseCategoricalCrossentropy).
-- [II.2-5] Keras. [set_random_seed](https://keras.io/api/utils/python_utils/#set_random_seed-function).
 
 ### Sources for Task II.3
 
 - [II.3-1] Keras. [Adam](https://keras.io/api/optimizers/adam/).
 - [II.3-2] Keras. [Probabilistic losses](https://keras.io/api/losses/probabilistic_losses/) and [model training APIs](https://keras.io/api/models/model_training_apis/).
 - [II.3-3] Keras. [Writing your own callbacks](https://keras.io/guides/writing_your_own_callbacks/) and [EarlyStopping](https://keras.io/api/callbacks/early_stopping/).
-- [II.3-4] scikit-learn. [precision_recall_fscore_support](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.precision_recall_fscore_support.html) and [f1_score](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.f1_score.html).
-- [II.3-5] scikit-learn. [confusion_matrix](https://scikit-learn.org/stable/modules/generated/sklearn.metrics.confusion_matrix.html).
 
 ### Sources for Task II.4
 
@@ -202,5 +180,5 @@ AI tools were used for code, debugging, figures and documentation, as allowed by
 
 | Member | Contributions |
 |---|---|
-| Claudio Alberto Lucas De Oliveira | Part I code and analysis, Part II implementation, README |
-| Uliana Kulebyakina | Part II code and analysis, Part I implementation, README |
+| Claudio Alberto Lucas De Oliveira | Part I code and analysis, Part II implementation, notebook review and test run, README |
+| Uliana Kulebyakina | Part II code and analysis, Part I implementation, notebook review and test run, README |
